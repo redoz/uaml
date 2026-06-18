@@ -1,0 +1,168 @@
+import { useRef, useState, useCallback, useEffect } from "react";
+import type { ModelNode, ModelEdge } from "@mc/okf";
+import { ObjectInspector } from "./ObjectInspector";
+import { RelationshipInspector } from "./RelationshipInspector";
+
+type Selection =
+  | { type: "node"; id: string }
+  | { type: "edge"; id: string }
+  | null;
+
+interface InspectorProps {
+  selection: Selection;
+  nodes: ModelNode[];
+  edges: ModelEdge[];
+  onUpdateNode: (key: string, patch: Partial<ModelNode>) => void;
+  onUpdateEdge: (id: string, patch: Partial<ModelEdge>) => void;
+  onClose: () => void;
+}
+
+const MIN_WIDTH = 320;
+
+function EmptyState() {
+  return (
+    <div className="px-6 py-[46px] text-center text-slate-500 text-[13px] leading-[1.6]">
+      <svg
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}
+        width={42} height={42}
+        className="mx-auto mb-3 opacity-35"
+      >
+        <rect x="3" y="4" width="7" height="6" rx="1.5" />
+        <rect x="14" y="4" width="7" height="6" rx="1.5" />
+        <rect x="9" y="14" width="7" height="6" rx="1.5" />
+      </svg>
+      <div>
+        Select an object or relationship to edit.
+        <br /><br />
+        Changes here are pushed to the matching Data Mart.
+      </div>
+    </div>
+  );
+}
+
+// Small tab visible when inspector is collapsed
+function ReopenTab({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title="Open inspector"
+      className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white border border-[#d8dee8] border-r-0 rounded-l-lg shadow-sm px-1 py-3 flex items-center cursor-pointer hover:bg-[#f1f3f7] transition-colors"
+      style={{ writingMode: "vertical-rl" }}
+    >
+      <span className="text-[11px] font-semibold text-slate-500 tracking-wide" style={{ writingMode: "horizontal-tb", transform: "rotate(-90deg)" }}>
+        Inspector
+      </span>
+    </button>
+  );
+}
+
+export function Inspector({
+  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose,
+}: InspectorProps) {
+  const [open, setOpen] = useState(true);
+  const [width, setWidth] = useState(320);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const resizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  const selectedNode = selection?.type === "node"
+    ? nodes.find(n => n.key === selection.id)
+    : undefined;
+  const selectedEdge = selection?.type === "edge"
+    ? edges.find(e => e.id === selection.id)
+    : undefined;
+
+  const title = selectedNode ? "Object" : selectedEdge ? "Relationship" : "Inspector";
+
+  // Resize drag handlers
+  const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = width;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [width]);
+
+  useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
+      if (!resizingRef.current) return;
+      const delta = startXRef.current - e.clientX;
+      const newWidth = Math.min(
+        window.innerWidth * 0.5,
+        Math.max(MIN_WIDTH, startWidthRef.current + delta)
+      );
+      setWidth(newWidth);
+    }
+    function onMouseUp() {
+      if (!resizingRef.current) return;
+      resizingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, []);
+
+  if (!open) {
+    return (
+      <div className="relative flex-shrink-0" style={{ width: 0 }}>
+        <ReopenTab onClick={() => setOpen(true)} />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={drawerRef}
+      className="bg-white border-l border-[#d8dee8] flex-shrink-0 flex flex-col z-10 shadow-[-4px_0_16px_rgba(15,23,42,0.04)] relative"
+      style={{ width, minWidth: MIN_WIDTH, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif" }}
+    >
+      {/* Resize handle */}
+      <div
+        onMouseDown={onResizeMouseDown}
+        className="absolute left-0 top-0 w-[7px] h-full cursor-col-resize z-[18] group"
+        title="Drag to resize"
+      >
+        <div className="absolute left-[2px] top-0 w-[2px] h-full bg-transparent group-hover:bg-[#4f46e5] transition-colors" />
+      </div>
+
+      {/* Header */}
+      <div className="px-4 py-[14px] border-b border-[#d8dee8] flex items-center gap-2 flex-shrink-0">
+        <h3 className="text-[13.5px] font-[650] flex-1 text-slate-900">{title}</h3>
+        <button
+          onClick={() => { onClose(); setOpen(false); }}
+          title="Close inspector"
+          className="cursor-pointer text-slate-500 border-none bg-none text-[18px] leading-none hover:text-slate-900 transition-colors p-0 bg-transparent"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-4 py-4 overflow-y-auto flex-1 min-h-0">
+        {selectedNode ? (
+          <ObjectInspector
+            node={selectedNode}
+            onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
+          />
+        ) : selectedEdge ? (
+          <RelationshipInspector
+            edge={selectedEdge}
+            fromNode={nodes.find(n => n.key === selectedEdge.from)}
+            toNode={nodes.find(n => n.key === selectedEdge.to)}
+            onUpdate={patch => onUpdateEdge(selectedEdge.id, patch)}
+          />
+        ) : (
+          <EmptyState />
+        )}
+      </div>
+    </div>
+  );
+}

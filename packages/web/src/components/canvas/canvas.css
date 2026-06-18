@@ -1,0 +1,27 @@
+/* Show React Flow handles on node hover/select */
+.react-flow__node:hover .mart-handle,
+.react-flow__node.selected .mart-handle {
+  opacity: 1 !important;
+}
+
+/* Canvas dot background is handled by React Flow Background component */
+
+/* Add/connect mode cursors */
+.canvas-add .react-flow__pane {
+  cursor: copy;
+}
+.canvas-connect .react-flow__pane {
+  cursor: crosshair;
+}
+
+/* Node selected ring */
+.react-flow__node.selected > div {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 0 0 3px #eef0fe, 0 6px 18px rgba(79, 70, 229, 0.15) !important;
+}
+
+/* Edge selected */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #4f46e5;
+  stroke-width: 2.5;
+}
