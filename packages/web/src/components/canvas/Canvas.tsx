@@ -20,9 +20,14 @@ import "./canvas.css";
 import dagre from "@dagrejs/dagre";
 
 import { createModelStore } from "../../state/model";
-import type { ModelNode, ModelEdge } from "@mc/okf";
+import type { ModelNode, ModelEdge, ModelGraph } from "@mc/okf";
 
+import { graphToBundleFiles, downloadBundle } from "../../okf/io";
+import { pushModel } from "../../sync/push";
+
+import { useAuth } from "../../lib/auth";
 import { TopBar } from "../TopBar";
+import { ImportDialog } from "../ImportDialog";
 import { Dock, type Tool } from "./Dock";
 import { MartNode } from "./MartNode";
 import { RelEdge } from "./RelEdge";
@@ -31,8 +36,8 @@ import { Inspector } from "../inspector/Inspector";
 // Cast to FC to avoid generic component JSX typing issues with @types/react 18.3
 const ReactFlow = ReactFlowBase as unknown as FC<ReactFlowProps>;
 
-// ── store singleton ──────────────────────────────────────────────────────────
-const store = createModelStore();
+// ── store singleton (exported so external modules can share this instance) ───
+export const store = createModelStore();
 
 // ── helpers to convert between model and RF types ───────────────────────────
 function toRFNode(n: ModelNode): Node {
@@ -89,6 +94,9 @@ function CanvasInner() {
 
   const [selection, setSelection] = useState<Selection>(null);
   const [tool, setTool] = useState<Tool>("select");
+  const [showImport, setShowImport] = useState(false);
+  const [pushStatus, setPushStatus] = useState<string | null>(null);
+  const { me } = useAuth();
 
   // Convert model → RF nodes/edges
   const rfNodes = useMemo(() => graph.nodes.map(toRFNode), [graph.nodes]);
@@ -166,6 +174,30 @@ function CanvasInner() {
     setTool("select");
   }, [screenToFlowPosition]);
 
+  // ── Import / Export / Push handlers ───────────────────────────────────────
+  const handleExport = useCallback(() => {
+    const title = me?.projectTitle ?? "model-okf";
+    const files = graphToBundleFiles(store.get(), title);
+    downloadBundle(files, title);
+  }, [me]);
+
+  const handleImportConfirm = useCallback((g: ModelGraph) => {
+    store.set(g);
+    setShowImport(false);
+  }, []);
+
+  const handlePush = useCallback(async () => {
+    setPushStatus("Pushing…");
+    try {
+      const result = await pushModel(store);
+      setPushStatus(`Done: ${result.created} created, ${result.failed} failed`);
+      setTimeout(() => setPushStatus(null), 4000);
+    } catch (e) {
+      setPushStatus(`Error: ${(e as Error).message}`);
+      setTimeout(() => setPushStatus(null), 4000);
+    }
+  }, []);
+
   // ── Pending count for TopBar ───────────────────────────────────────────────
   const pendingCount = graph.nodes.filter(n => n.status === "pending").length;
 
@@ -181,7 +213,23 @@ function CanvasInner() {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <TopBar pendingCount={pendingCount} />
+      <TopBar
+        pendingCount={pendingCount}
+        onImport={() => setShowImport(true)}
+        onExport={handleExport}
+        onPush={() => { void handlePush(); }}
+      />
+      {pushStatus && (
+        <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white text-[13px] px-4 py-2 rounded-lg shadow-lg">
+          {pushStatus}
+        </div>
+      )}
+      {showImport && (
+        <ImportDialog
+          onConfirm={handleImportConfirm}
+          onClose={() => setShowImport(false)}
+        />
+      )}
 
       <div className="flex flex-1 min-h-0 relative">
         {/* Left tool dock */}
