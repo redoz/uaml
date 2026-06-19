@@ -1,4 +1,5 @@
 import type { ModelEdge, ModelNode, JoinKey } from "@mc/okf";
+import { JoinIcon } from "../../lib/icons";
 
 interface RelationshipInspectorProps {
   edge: ModelEdge;
@@ -29,7 +30,7 @@ export function RelationshipInspector({ edge, fromNode, toNode, onUpdate }: Rela
     <div className="flex flex-col gap-[15px]">
       {/* Status pill */}
       <div className="text-[12px] px-[11px] py-[9px] rounded-lg flex items-center gap-2 bg-[#f1f5f9] text-[#475569]">
-        🔗 Joinable · same storage ✓
+        <JoinIcon size={14} /> Joinable · same storage ✓
       </div>
 
       {/* Direction */}

@@ -1,4 +1,6 @@
+import { Download, Upload } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { ProjectIcon, StorageIcon, LibraryIcon } from "../lib/icons";
 
 export interface StorageOption { id: string; title: string; type: string; }
 
@@ -10,6 +12,7 @@ export interface TopBarProps {
   onImport?: () => void;
   onExport?: () => void;
   onPush?: () => void;
+  onLibrary?: () => void;
 }
 
 const LOGO = (
@@ -35,7 +38,7 @@ const LOGO = (
   </svg>
 );
 
-export function TopBar({ pendingCount = 0, storages = [], storageId, onStorageChange, onImport, onExport, onPush }: TopBarProps) {
+export function TopBar({ pendingCount = 0, storages = [], storageId, onStorageChange, onImport, onExport, onPush, onLibrary }: TopBarProps) {
   const { me, signOut } = useAuth();
 
   return (
@@ -48,12 +51,12 @@ export function TopBar({ pendingCount = 0, storages = [], storageId, onStorageCh
 
       {/* Project picker chip */}
       <button className="flex items-center gap-[7px] text-[13px] text-slate-500 border border-[#d8dee8] rounded-lg px-[10px] py-[5px] bg-white cursor-pointer hover:bg-[#f1f3f7]">
-        📁 Project: <span className="text-slate-900 font-semibold">{me?.projectTitle ?? "—"}</span> ▾
+        <ProjectIcon size={14} /> Project: <span className="text-slate-900 font-semibold">{me?.projectTitle ?? "—"}</span> ▾
       </button>
 
       {/* Storage picker — one storage per model (joinable requires same storage) */}
       <label className="flex items-center gap-[7px] text-[13px] text-slate-500 border border-[#d8dee8] rounded-lg px-[10px] py-[5px] bg-white" title="One storage per model — joinable relationships require all marts on the same storage">
-        🗄️ Storage:
+        <StorageIcon size={14} /> Storage:
         <select
           value={storageId ?? ""}
           onChange={e => onStorageChange?.(e.target.value)}
@@ -66,12 +69,21 @@ export function TopBar({ pendingCount = 0, storages = [], storageId, onStorageCh
 
       <div className="flex-1" />
 
+      {/* Template library */}
+      <button
+        onClick={onLibrary}
+        title="Template library"
+        className="text-slate-600 border border-[#d8dee8] bg-white rounded-lg p-[7px] cursor-pointer flex items-center hover:bg-[#f1f3f7]"
+      >
+        <LibraryIcon size={16} />
+      </button>
+
       {/* Import OKF */}
       <button
         onClick={onImport}
         className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7]"
       >
-        ⤓ Import OKF
+        <Download size={15} /> Import OKF
       </button>
 
       {/* Export OKF */}
@@ -79,7 +91,7 @@ export function TopBar({ pendingCount = 0, storages = [], storageId, onStorageCh
         onClick={onExport}
         className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7]"
       >
-        ⤒ Export OKF
+        <Upload size={15} /> Export OKF
       </button>
 
       {/* Push to OWOX */}

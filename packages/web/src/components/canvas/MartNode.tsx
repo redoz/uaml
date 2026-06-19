@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { ModelNode } from "@mc/okf";
+import { DataMartIcon } from "../../lib/icons";
 
 const SOURCE_COLOR: Record<string, string> = {
   SQL: "#10b981",
@@ -54,6 +55,7 @@ function MartNodeInner({ data }: NodeProps) {
           className="w-1 self-stretch min-h-[18px] rounded-sm flex-shrink-0"
           style={{ background: color }}
         />
+        <DataMartIcon size={15} className="text-slate-400 flex-shrink-0" />
         <span className="text-[13.5px] font-semibold flex-1 leading-tight pr-3 text-slate-900 line-clamp-2">
           {node.title}
         </span>

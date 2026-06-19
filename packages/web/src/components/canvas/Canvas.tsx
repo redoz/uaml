@@ -29,6 +29,7 @@ import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { TopBar, type StorageOption } from "../TopBar";
 import { ImportDialog } from "../ImportDialog";
+import { LibraryDialog } from "../LibraryDialog";
 import { Dock, type Tool } from "./Dock";
 import { MartNode } from "./MartNode";
 import { RelEdge } from "./RelEdge";
@@ -96,6 +97,7 @@ function CanvasInner() {
   const [selection, setSelection] = useState<Selection>(null);
   const [tool, setTool] = useState<Tool>("select");
   const [showImport, setShowImport] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [storages, setStorages] = useState<StorageOption[]>([]);
 
@@ -198,6 +200,14 @@ function CanvasInner() {
     setShowImport(false);
   }, []);
 
+  const handleUseTemplate = useCallback((g: ModelGraph) => {
+    // Keep the model on the currently selected storage; auto-layout the template.
+    const positions = runDagreLayout(g.nodes, g.edges);
+    const nodes = g.nodes.map(n => ({ ...n, position: positions.get(n.key) ?? n.position }));
+    store.set({ ...g, storageId: store.get().storageId, nodes });
+    setShowLibrary(false);
+  }, []);
+
   const handlePush = useCallback(async () => {
     setPushStatus("Pushing…");
     try {
@@ -233,6 +243,7 @@ function CanvasInner() {
         onImport={() => setShowImport(true)}
         onExport={handleExport}
         onPush={() => { void handlePush(); }}
+        onLibrary={() => setShowLibrary(true)}
       />
       {pushStatus && (
         <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white text-[13px] px-4 py-2 rounded-lg shadow-lg">
@@ -243,6 +254,12 @@ function CanvasInner() {
         <ImportDialog
           onConfirm={handleImportConfirm}
           onClose={() => setShowImport(false)}
+        />
+      )}
+      {showLibrary && (
+        <LibraryDialog
+          onUse={handleUseTemplate}
+          onClose={() => setShowLibrary(false)}
         />
       )}
 

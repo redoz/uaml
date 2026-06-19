@@ -1,5 +1,6 @@
 import type { ModelNode, InputSource, SchemaField } from "@mc/okf";
 import { SchemaEditor } from "./SchemaEditor";
+import { InputSourceIcon, OutputSchemaIcon } from "../../lib/icons";
 
 const INPUT_SOURCES: InputSource[] = ["SQL", "CONNECTOR", "VIEW", "TABLE"];
 
@@ -49,6 +50,7 @@ export function ObjectInspector({ node, onUpdate }: ObjectInspectorProps) {
       {/* Input source */}
       <div>
         <label className="flex items-center gap-[5px] text-[11px] font-semibold text-slate-500 uppercase tracking-[0.3px] mb-[6px]">
+          <InputSourceIcon size={13} className="text-slate-400" />
           Input source
           <span
             className="w-[14px] h-[14px] rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold inline-flex items-center justify-center cursor-help normal-case tracking-normal"
@@ -84,6 +86,7 @@ export function ObjectInspector({ node, onUpdate }: ObjectInspectorProps) {
       {/* Output schema */}
       <div>
         <label className="flex items-center gap-[5px] text-[11px] font-semibold text-slate-500 uppercase tracking-[0.3px] mb-[6px]">
+          <OutputSchemaIcon size={13} className="text-slate-400" />
           Output schema
           <span
             className="w-[14px] h-[14px] rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold inline-flex items-center justify-center cursor-help normal-case tracking-normal"
