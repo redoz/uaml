@@ -10,5 +10,10 @@ export function buildApp() {
   app.register(authRoutes);
   app.register(dataMartRoutes);
   app.register(metaRoutes);
+  // Surface the real upstream error (OwoxClient throws with the OWOX status + body)
+  // instead of Fastify's generic "Internal Server Error", so the UI can show it.
+  app.setErrorHandler((err: Error, _req, reply) => {
+    reply.code(502).send({ error: err.message || "Upstream error" });
+  });
   return app;
 }

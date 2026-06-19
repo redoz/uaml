@@ -30,11 +30,18 @@ export async function pushModel(store: ModelStore, api: Api = defaultApi): Promi
     if (n.status === "created") continue;
     store.updateNode(n.key, { status: "creating", error: null });
     try {
-      // Minimal create: only { title, storageId } is required; schema is optional.
-      const body: Record<string, unknown> = { title: n.title, storageId };
-      if (n.description) body.description = n.description;
-      if (n.schema.length) body.schema = { fields: n.schema.map(f => ({ name: f.name, type: f.type, isPrimaryKey: f.pk })) };
-      const out = await api<{ id: string }>("/api/data-marts", { method: "POST", body: JSON.stringify(body) });
+      // Create a draft with just { title, storageId } — confirmed to always 201.
+      // Output schema is storage-type-specific (BigQuery/Snowflake have different
+      // validated shapes), so it's left for ODM / a future schema-push step; the
+      // fields still travel with the model via OKF export.
+      const out = await api<{ id: string }>("/api/data-marts", {
+        method: "POST",
+        body: JSON.stringify({ title: n.title, storageId }),
+      });
+      // Best-effort: push the description if set (never fails the node).
+      if (n.description) {
+        await api(`/api/data-marts/${out.id}/description`, { method: "PUT", body: JSON.stringify({ description: n.description }) }).catch(() => {});
+      }
       store.updateNode(n.key, { status: "created", owoxId: out.id, createdAt: new Date().toISOString() });
       res.created++;
     } catch (e) {
