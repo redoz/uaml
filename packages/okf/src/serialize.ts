@@ -22,8 +22,8 @@ function renderNode(n: ModelNode, g: ModelGraph, slugByKey: Map<string, string>)
       status: n.status === "created" ? "PUBLISHED" : "DRAFT", id: n.owoxId ?? null, position: n.position },
   });
   const schema = n.schema.length
-    ? "\n## Schema\n\n| Column | Type | PK |\n|--------|------|----|\n" +
-      n.schema.map(f => `| \`${f.name}\` | ${f.type} | ${f.pk ? "✓" : ""} |`).join("\n") + "\n"
+    ? "\n## Schema\n\n| Column | Type | PK | Alias | Description |\n|--------|------|----|-------|-------------|\n" +
+      n.schema.map(f => `| \`${f.name}\` | ${f.type} | ${f.pk ? "✓" : ""} | ${f.alias ?? ""} | ${f.description ?? ""} |`).join("\n") + "\n"
     : "";
   const definition = n.definition && n.definition.trim()
     ? `\n## Definition\n\n\`\`\`${n.inputSource === "SQL" ? "sql" : "text"}\n${n.definition.trim()}\n\`\`\`\n`

@@ -25,6 +25,30 @@ describe("okf round-trip", () => {
     expect(back.edges).toHaveLength(1);
     expect(back.edges[0]).toMatchObject({ from: "fb", to: "camp", keys: [{ left: "campaign_id", right: "id" }] });
   });
+  it("round-trips per-field alias and description, and reads the legacy 3-column form", () => {
+    const g: ModelGraph = {
+      storageId: null,
+      nodes: [{
+        key: "u", title: "Users", inputSource: "SQL", position: { x: 0, y: 0 }, status: "pending", owoxId: null,
+        schema: [
+          { name: "id", type: "STRING", pk: true, alias: "user_id", description: "Unique id" },
+          { name: "email", type: "STRING", pk: false },
+        ],
+      }],
+      edges: [],
+    };
+    const back = parseBundle(serializeBundle(g, "P").files);
+    expect(back.nodes[0].schema).toEqual([
+      { name: "id", type: "STRING", pk: true, alias: "user_id", description: "Unique id" },
+      { name: "email", type: "STRING", pk: false },
+    ]);
+    // Legacy 3-column table still imports.
+    const legacy = parseBundle({
+      "p/a.md": frontless("a", "A") + "\n## Schema\n\n| Column | Type | PK |\n|--|--|--|\n| `x` | INTEGER | ✓ |\n",
+    });
+    expect(legacy.nodes[0].schema).toEqual([{ name: "x", type: "INTEGER", pk: true }]);
+  });
+
   it("collapses mutual Joins lines into one bidirectional edge", () => {
     const files = {
       "p/a.md": frontless("a", "A") + "\n## Joins\n- [B](./b.md) — `x = y`\n",

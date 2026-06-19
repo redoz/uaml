@@ -86,12 +86,12 @@ One row per order, used for revenue and retention.
 
 ## Schema
 
-| Column | Type | PK |
-|--------|------|----|
-| `id` | STRING | ✓ |
-| `customer_id` | STRING | |
-| `order_date` | DATE | |
-| `total` | FLOAT | |
+| Column | Type | PK | Alias | Description |
+|--------|------|----|-------|-------------|
+| `id` | STRING | ✓ | order_id | Unique order identifier |
+| `customer_id` | STRING | | | FK to Customers |
+| `order_date` | DATE | | | |
+| `total` | FLOAT | | revenue | Order total, gross |
 
 ## Definition
 
@@ -115,7 +115,15 @@ SELECT id, customer_id, order_date, total FROM `project.dataset.orders`
   </ul>
 
   <h2>4. Output schema (fields)</h2>
-  <p>Define the mart's columns in a <code>## Schema</code> table: <code>Column</code>, <code>Type</code>, <code>PK</code> (put <code>✓</code> for primary keys). These are pushed to the Data Mart's output schema.</p>
+  <p>Define the mart's columns in a <code>## Schema</code> table. Columns:</p>
+  <ul>
+    <li><code>Column</code> — field name (required).</li>
+    <li><code>Type</code> — one of the allowed types below (required).</li>
+    <li><code>PK</code> — put <code>✓</code> for primary keys (optional).</li>
+    <li><code>Alias</code> — a friendly display name for the field (optional).</li>
+    <li><code>Description</code> — a short per-field note (optional).</li>
+  </ul>
+  <p>All five are pushed to the Data Mart's output schema (name, type, PK, alias, description per field). <code>Alias</code> and <code>Description</code> may be left blank; the older 3-column form (<code>Column · Type · PK</code>) still imports.</p>
   <p><b>Allowed types</b> (cross-storage canonical set — do not use others like <code>DATETIME</code>):</p>
   <p><span class="chip">STRING</span><span class="chip">INTEGER</span><span class="chip">FLOAT</span><span class="chip">NUMERIC</span><span class="chip">BOOLEAN</span><span class="chip">DATE</span><span class="chip">TIME</span><span class="chip">TIMESTAMP</span><span class="chip">BYTES</span><span class="chip">GEOGRAPHY</span><span class="chip">VARIANT</span></p>
 
@@ -153,10 +161,10 @@ owox:
 ---
 # Customers
 ## Schema
-| Column | Type | PK |
-|--------|------|----|
-| `id` | STRING | ✓ |
-| `email` | STRING | |
+| Column | Type | PK | Alias | Description |
+|--------|------|----|-------|-------------|
+| `id` | STRING | ✓ | customer_id | Unique customer id |
+| `email` | STRING | | | Primary contact email |
 
 &lt;!-- shop/orders.md --&gt;
 ---
@@ -169,10 +177,10 @@ owox:
 ---
 # Orders
 ## Schema
-| Column | Type | PK |
-|--------|------|----|
-| `id` | STRING | ✓ |
-| `customer_id` | STRING | |
+| Column | Type | PK | Alias | Description |
+|--------|------|----|-------|-------------|
+| `id` | STRING | ✓ | order_id | Unique order id |
+| `customer_id` | STRING | | | FK to Customers |
 ## Joins
 - [Customers](./customers.md) — `customer_id = id`</code></pre>
 

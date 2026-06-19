@@ -1,7 +1,7 @@
 export type InputSource = "SQL" | "CONNECTOR" | "VIEW" | "TABLE";
 export type NodeStatus = "pending" | "creating" | "created" | "error";
 
-export interface SchemaField { name: string; type: string; pk: boolean; }
+export interface SchemaField { name: string; type: string; pk: boolean; alias?: string; description?: string; }
 export interface JoinKey { left: string; right: string; }
 
 export interface ModelNode {

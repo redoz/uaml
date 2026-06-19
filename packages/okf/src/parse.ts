@@ -42,14 +42,29 @@ export function parseBundle(files: Record<string, string>): ModelGraph {
   return { storageId, nodes, edges };
 }
 
-function parseSchema(body: string): { name: string; type: string; pk: boolean }[] {
-  const out: { name: string; type: string; pk: boolean }[] = [];
+function parseSchema(body: string): import("./types").SchemaField[] {
+  const out: import("./types").SchemaField[] = [];
   const lines = body.split("\n"); let inSchema = false;
   for (const ln of lines) {
     if (/^##?\s+Schema/i.test(ln)) { inSchema = true; continue; }
-    if (inSchema && /^##?\s+/.test(ln)) break;
-    const m = ln.match(/^\|\s*`?([\w.]+)`?\s*\|\s*([\w]+)\s*\|\s*(✓|x|X)?\s*\|/);
-    if (inSchema && m && m[1] !== "Column") out.push({ name: m[1], type: m[2], pk: !!m[3] });
+    if (!inSchema) continue;
+    if (/^##?\s+/.test(ln)) break;
+    if (!/^\s*\|/.test(ln)) continue;                       // not a table row
+    // Cells: | name | type | pk | alias | description | (alias/description optional).
+    const cells = ln.split("|").slice(1, -1).map(c => c.trim());
+    if (cells.length < 2) continue;
+    const name = cells[0].replace(/`/g, "").trim();
+    if (!name || name === "Column" || /^:?-+:?$/.test(name)) continue; // header / separator
+    const field: import("./types").SchemaField = {
+      name,
+      type: (cells[1] || "STRING").replace(/`/g, "").trim() || "STRING",
+      pk: /^(✓|x|X)$/.test((cells[2] || "").trim()),
+    };
+    const alias = (cells[3] || "").trim();
+    const description = (cells[4] || "").trim();
+    if (alias) field.alias = alias;
+    if (description) field.description = description;
+    out.push(field);
   }
   return out;
 }

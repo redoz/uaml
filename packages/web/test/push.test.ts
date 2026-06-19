@@ -42,6 +42,20 @@ describe("pushModel", () => {
       .toEqual({ definitionType: "VIEW", definition: { fullyQualifiedName: "proj.ds.sessions_v" } });
   });
 
+  it("pushes per-field alias and description in the output schema", async () => {
+    const s = createModelStore({ storageId: "stor_1" });
+    const n = s.addNode({ x: 0, y: 0 });
+    s.updateNode(n.key, { schema: [{ name: "id", type: "STRING", pk: true, alias: "user_id", description: "Unique id" }] });
+    const bodies: Record<string, any> = {};
+    const apiMock = vi.fn(async (path: string, init?: any) => {
+      if (init?.body) bodies[path] = JSON.parse(init.body);
+      return { id: "owox_a" };
+    });
+    await pushModel(s, apiMock as any, "GOOGLE_BIGQUERY");
+    const field = bodies["/api/data-marts/owox_a/schema"].schema.fields[0];
+    expect(field).toMatchObject({ name: "id", alias: "user_id", description: "Unique id", isPrimaryKey: true });
+  });
+
   it("marks a node error on failure and counts it", async () => {
     const s = createModelStore({ storageId: "stor_1" }); s.addNode({ x: 0, y: 0 });
     const apiMock = vi.fn(async () => { throw new Error("boom"); });

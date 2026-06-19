@@ -75,7 +75,8 @@ export async function pushModel(store: ModelStore, api: Api = defaultApi, storag
                 type: schemaDiscriminator(storageType),
                 fields: fields.map(f => ({
                   name: f.name, type: f.type, mode: "NULLABLE",
-                  status: "CONNECTED", description: "", isPrimaryKey: f.pk,
+                  status: "CONNECTED", description: f.description ?? "", isPrimaryKey: f.pk,
+                  ...(f.alias ? { alias: f.alias } : {}),
                 })),
               },
             }),
