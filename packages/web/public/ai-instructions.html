@@ -68,11 +68,11 @@
 type: "OWOX Data Mart"
 title: "Orders"
 description: "One row per order"
-tags: ["owox", "view"]
+tags: ["owox", "sql"]
 timestamp: 2026-06-19T10:00:00Z
 owox:
   key: orders                 # local id used to wire relationships (unique in the model)
-  inputSource: VIEW           # SQL | CONNECTOR | VIEW | TABLE  (default SQL)
+  inputSource: SQL            # SQL | CONNECTOR | VIEW | TABLE  (default SQL)
   storageId: ""               # leave empty — the canvas sets the selected storage
   status: DRAFT
   id: null                    # leave null — filled after Push
@@ -119,7 +119,13 @@ SELECT id, customer_id, order_date, total FROM `project.dataset.orders`
   <p><span class="chip">STRING</span><span class="chip">INTEGER</span><span class="chip">FLOAT</span><span class="chip">NUMERIC</span><span class="chip">BOOLEAN</span><span class="chip">DATE</span><span class="chip">TIME</span><span class="chip">TIMESTAMP</span><span class="chip">BYTES</span><span class="chip">GEOGRAPHY</span><span class="chip">VARIANT</span></p>
 
   <h2>5. Definition (optional)</h2>
-  <p>Optionally include a <code>## Definition</code> fenced code block: a SQL query for <code>SQL</code>/<code>VIEW</code> marts, or a table reference (<code>project.dataset.table</code>) for <code>TABLE</code> marts. Use a <code>```sql</code> fence for SQL. Omit it for connector-based marts.</p>
+  <p>Optionally include a <code>## Definition</code> fenced code block. Its meaning depends on <code>inputSource</code>:</p>
+  <ul>
+    <li><code>SQL</code> — a SQL query (use a <code>```sql</code> fence), e.g. <code>SELECT … FROM `project.dataset.table`</code>.</li>
+    <li><code>TABLE</code> — a fully-qualified table name, e.g. <code>project.dataset.table</code>.</li>
+    <li><code>VIEW</code> — a fully-qualified view name, e.g. <code>project.dataset.view</code> (a reference, <b>not</b> a SQL query).</li>
+    <li><code>CONNECTOR</code> — omit; configured in OWOX after creation.</li>
+  </ul>
 
   <h2>6. Relationships (Joins)</h2>
   <p>Declare joinable relationships in a <code>## Joins</code> section on the <b>source</b> mart. Each line links to the target document and states the join condition:</p>

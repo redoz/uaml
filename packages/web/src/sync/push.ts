@@ -135,16 +135,17 @@ export async function pushModel(store: ModelStore, api: Api = defaultApi, storag
 }
 
 // Map a node's input source + definition text to OWOX's definition envelope.
-// SQL/VIEW carry a SQL query (matching how the canvas authors them); TABLE
-// carries a fully-qualified table reference. CONNECTOR config can't be
-// synthesized here, so it's skipped. Returns null when there's nothing to send.
+// SQL carries a SQL query; TABLE and VIEW both reference an existing object by
+// fully-qualified name (OWOX's VIEW input source is a view path, not a query).
+// CONNECTOR config can't be synthesized here, so it's skipped. Returns null
+// when there's nothing to send.
 function definitionBody(n: ModelNode): unknown | null {
   const text = n.definition?.trim();
   if (!text) return null;
   switch (n.inputSource) {
     case "SQL":   return { definitionType: "SQL",   definition: { sqlQuery: text } };
-    case "VIEW":  return { definitionType: "VIEW",  definition: { sqlQuery: text } };
     case "TABLE": return { definitionType: "TABLE", definition: { fullyQualifiedName: text } };
+    case "VIEW":  return { definitionType: "VIEW",  definition: { fullyQualifiedName: text } };
     default:      return null; // CONNECTOR / unknown
   }
 }

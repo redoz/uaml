@@ -8,7 +8,7 @@ const INPUT_SOURCES: InputSource[] = ["SQL", "CONNECTOR", "VIEW", "TABLE"];
 
 const DEFINITION_HINT: Record<InputSource, { label: string; placeholder: string }> = {
   SQL: { label: "SQL query", placeholder: "SELECT … FROM `project.dataset.table`" },
-  VIEW: { label: "View definition (SQL)", placeholder: "SELECT … FROM …" },
+  VIEW: { label: "View reference", placeholder: "project.dataset.view" },
   TABLE: { label: "Table reference", placeholder: "project.dataset.table" },
   CONNECTOR: { label: "Connector details", placeholder: "Configured in OWOX after creation" },
 };
