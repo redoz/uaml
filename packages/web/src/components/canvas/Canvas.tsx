@@ -24,6 +24,7 @@ import { X } from "lucide-react";
 
 import { createModelStore } from "../../state/model";
 import { loadPersistedGraph, persistGraph } from "../../state/persist";
+import { loadViewMode, persistViewMode, type ViewMode } from "../../state/viewMode";
 import type { ModelNode, ModelEdge, ModelGraph } from "@mc/okf";
 
 import { graphToBundleFiles, downloadBundle } from "../../okf/io";
@@ -105,6 +106,7 @@ function CanvasInner() {
 
   const [selection, setSelection] = useState<Selection>(null);
   const [tool, setTool] = useState<Tool>("select");
+  const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode());
   const [showImport, setShowImport] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [pushing, setPushing] = useState(false);
@@ -223,6 +225,14 @@ function CanvasInner() {
       return;
     }
     setTool(t);
+  }, []);
+
+  const handleToggleView = useCallback(() => {
+    setViewMode(prev => {
+      const next = prev === "erd" ? "compact" : "erd";
+      persistViewMode(next);
+      return next;
+    });
   }, []);
 
   // ── Keyboard delete ────────────────────────────────────────────────────────
@@ -357,7 +367,7 @@ function CanvasInner() {
 
       <div className="flex flex-1 min-h-0 relative">
         {/* Left tool dock */}
-        <Dock activeTool={tool} onToolChange={handleToolChange} />
+        <Dock activeTool={tool} onToolChange={handleToolChange} viewMode={viewMode} onToggleView={handleToggleView} />
 
         {/* React Flow canvas */}
         <div

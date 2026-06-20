@@ -1,10 +1,13 @@
 import { useEffect } from "react";
+import type { ViewMode } from "../../state/viewMode";
 
 export type Tool = "select" | "add" | "connect" | "layout";
 
 interface DockProps {
   activeTool: Tool;
   onToolChange: (tool: Tool) => void;
+  viewMode: ViewMode;
+  onToggleView: () => void;
 }
 
 const SelectIcon = () => (
@@ -37,6 +40,14 @@ const LayoutIcon = () => (
   </svg>
 );
 
+const ErdIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={19} height={19}>
+    <rect x="3" y="4" width="8" height="16" rx="1" />
+    <rect x="14" y="4" width="7" height="9" rx="1" />
+    <path d="M11 8h3M7 9v6M17 13v3M17 16h-6" />
+  </svg>
+);
+
 interface ToolButtonProps {
   icon: React.ReactNode;
   tip: string;
@@ -62,7 +73,7 @@ function ToolButton({ icon, tip, active, onClick }: ToolButtonProps) {
   );
 }
 
-export function Dock({ activeTool, onToolChange }: DockProps) {
+export function Dock({ activeTool, onToolChange, viewMode, onToggleView }: DockProps) {
   // Keyboard shortcuts V/N/C
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -106,6 +117,21 @@ export function Dock({ activeTool, onToolChange }: DockProps) {
         active={false}
         onClick={() => onToolChange("layout")}
       />
+      <div className="h-px bg-[#d8dee8] mx-1 my-[3px]" />
+      <button
+        onClick={onToggleView}
+        title="ERD view — show fields & field-level links"
+        aria-pressed={viewMode === "erd"}
+        className={`
+          w-[38px] h-[38px] rounded-[9px] border-none flex items-center justify-center cursor-pointer transition-colors
+          ${viewMode === "erd"
+            ? "bg-[#eef0fe] text-[#4f46e5]"
+            : "bg-transparent text-slate-500 hover:bg-[#f1f3f7] hover:text-slate-900"
+          }
+        `}
+      >
+        <ErdIcon />
+      </button>
     </div>
   );
 }
