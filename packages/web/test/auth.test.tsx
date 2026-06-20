@@ -8,10 +8,10 @@ beforeEach(() => {
     new Response(JSON.stringify({ error: "Not connected" }), { status: 401 })));
 });
 
-describe("auth gate", () => {
-  it("renders Connect to OWOX when there is no session", async () => {
+describe("anonymous canvas", () => {
+  it("renders the canvas (no gate) and shows Sign in when there is no session", async () => {
     render(<App />);
-    await waitFor(() => expect(screen.getByText("Connect to OWOX")).toBeTruthy());
-    expect(screen.getByPlaceholderText("owox_key_...")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Sign in")).toBeTruthy());
+    expect(screen.queryByText("Connect to OWOX")).toBeNull();
   });
 });

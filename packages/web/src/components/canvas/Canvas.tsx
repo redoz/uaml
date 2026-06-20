@@ -34,6 +34,8 @@ import { useAuth } from "../../lib/auth";
 import { TopBar, type StorageOption } from "../TopBar";
 import { ImportDialog } from "../ImportDialog";
 import { LibraryDialog } from "../LibraryDialog";
+import { SignInModal } from "../SignInModal";
+import { pushIntent } from "../../sync/pushGate";
 import { Dock, type Tool } from "./Dock";
 import { MartNode } from "./MartNode";
 import { RelEdge } from "./RelEdge";
@@ -108,26 +110,32 @@ function CanvasInner() {
   const [pushing, setPushing] = useState(false);
   const [pushResult, setPushResult] = useState<PushResult | null>(null);
   const [storages, setStorages] = useState<StorageOption[]>([]);
+  const [signIn, setSignIn] = useState<{ mode: "connect" | "push" } | null>(null);
+  const { me, connect, signOut } = useAuth();
 
-  // Load the project's storages and default the model to the first one so a fresh
-  // canvas can push immediately. Retry on failure — OWOX's API occasionally 500s
-  // transiently, and a one-shot fetch would otherwise leave the picker empty.
-  useEffect(() => {
-    let cancelled = false;
-    const load = (attempt = 0) => {
-      api<StorageOption[]>("/api/storages")
-        .then(list => {
-          if (cancelled) return;
-          setStorages(list);
-          if (!store.get().storageId && list[0]) store.set({ ...store.get(), storageId: list[0].id });
-        })
-        .catch(() => { if (!cancelled && attempt < 5) setTimeout(() => load(attempt + 1), 1500); });
-    };
-    load();
-    return () => { cancelled = true; };
+  // Load the project's storages once signed in; retry through OWOX's transient
+  // 500s. Anonymous users have no session, so we skip the call entirely and
+  // clear any stale list.
+  const loadStorages = useCallback(async (): Promise<StorageOption[]> => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const list = await api<StorageOption[]>("/api/storages");
+        setStorages(list);
+        if (!store.get().storageId && list[0]) store.set({ ...store.get(), storageId: list[0].id });
+        return list;
+      } catch {
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+    return [];
   }, []);
+
+  useEffect(() => {
+    if (!me) { setStorages([]); return; }
+    void loadStorages();
+  }, [me, loadStorages]);
+
   const handleStorageChange = useCallback((id: string) => { store.set({ ...store.get(), storageId: id }); }, []);
-  const { me } = useAuth();
 
   // React Flow owns the live node/edge arrays so dragging follows the cursor
   // smoothly (RF applies position changes frame-by-frame). The model store stays
@@ -259,11 +267,11 @@ function CanvasInner() {
     setShowLibrary(false);
   }, []);
 
-  const handlePush = useCallback(async () => {
+  const runPush = useCallback(async (storagesList: StorageOption[] = storages) => {
     setPushResult(null);
     setPushing(true);
     try {
-      const storageType = storages.find(s => s.id === store.get().storageId)?.type;
+      const storageType = storagesList.find(s => s.id === store.get().storageId)?.type;
       const result = await pushModel(store, undefined, storageType);
       setPushResult(result);
     } catch (e) {
@@ -272,6 +280,11 @@ function CanvasInner() {
       setPushing(false);
     }
   }, [storages]);
+
+  const handlePush = useCallback(() => {
+    if (pushIntent(me) === "sign-in") { setSignIn({ mode: "push" }); return; }
+    void runPush();
+  }, [me, runPush]);
 
   // ── Pending count for TopBar ───────────────────────────────────────────────
   const pendingCount = graph.nodes.filter(n => n.status === "pending").length;
@@ -295,8 +308,12 @@ function CanvasInner() {
         onStorageChange={handleStorageChange}
         onImport={() => setShowImport(true)}
         onExport={handleExport}
-        onPush={() => { void handlePush(); }}
+        onPush={handlePush}
         onLibrary={() => setShowLibrary(true)}
+        signedIn={!!me}
+        projectTitle={me?.projectTitle}
+        onSignIn={() => setSignIn({ mode: "connect" })}
+        onSignOut={() => { void signOut(); }}
       />
       {pushing && (
         <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white text-[13px] px-4 py-2 rounded-lg shadow-lg">
@@ -316,6 +333,19 @@ function CanvasInner() {
         <LibraryDialog
           onUse={handleUseTemplate}
           onClose={() => setShowLibrary(false)}
+        />
+      )}
+      {signIn && (
+        <SignInModal
+          mode={signIn.mode}
+          connect={connect}
+          onConnected={async () => {
+            const mode = signIn.mode;
+            setSignIn(null);
+            const list = await loadStorages();
+            if (mode === "push") await runPush(list);
+          }}
+          onClose={() => setSignIn(null)}
         />
       )}
 
