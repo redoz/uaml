@@ -28,12 +28,19 @@ export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], viewMode: V
     const srcFields = fieldsByKey.get(e.from);
     const tgtFields = fieldsByKey.get(e.to);
 
+    // Keep the same side the edge uses in compact mode — the stored
+    // sourceHandle/targetHandle ("left"/"right") — and only move the anchor
+    // vertically onto the field row. Otherwise the arrow would jump sides when
+    // toggling views. fr:<field> = right edge of the row, fl:<field> = left edge.
+    const srcSide = e.sourceHandle === "left" ? "fl" : "fr";
+    const tgtSide = e.targetHandle === "right" ? "fr" : "fl";
+
     return usable.map((k, i): Edge => ({
       id: `${e.id}::${i}`,
       source: e.from,
       target: e.to,
-      sourceHandle: k.left && srcFields?.has(k.left) ? `fr:${k.left}` : "right",
-      targetHandle: k.right && tgtFields?.has(k.right) ? `fl:${k.right}` : "left",
+      sourceHandle: k.left && srcFields?.has(k.left) ? `${srcSide}:${k.left}` : (e.sourceHandle ?? "right"),
+      targetHandle: k.right && tgtFields?.has(k.right) ? `${tgtSide}:${k.right}` : (e.targetHandle ?? "left"),
       type: "rel",
       data: { keys: [k], bidirectional: e.bidirectional, modelEdgeId: e.id } as unknown as Record<string, unknown>,
     }));

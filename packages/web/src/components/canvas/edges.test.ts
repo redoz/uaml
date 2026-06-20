@@ -36,6 +36,16 @@ describe("buildRfEdges", () => {
     expect(out[1].targetHandle).toBe("fl:y");
   });
 
+  it("erd: keeps the stored handle side (left source / right target) instead of forcing fr/fl", () => {
+    const e: ModelEdge = {
+      id: "e1", from: "a", to: "b", keys: [{ left: "id", right: "a_id" }],
+      bidirectional: false, sourceHandle: "left", targetHandle: "right",
+    };
+    const out = buildRfEdges([e], nodes, "erd");
+    expect(out[0].sourceHandle).toBe("fl:id");
+    expect(out[0].targetHandle).toBe("fr:a_id");
+  });
+
   it("erd: falls back to node-level handles when a key field is missing", () => {
     const out = buildRfEdges([edge([{ left: "id", right: "nope" }])], nodes, "erd");
     expect(out).toHaveLength(1);
