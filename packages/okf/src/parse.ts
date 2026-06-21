@@ -1,5 +1,5 @@
 import type { ModelGraph, ModelNode, ModelEdge, InputSource } from "./types";
-import { parseFrontmatter, slugify } from "./slug";
+import { parseFrontmatter } from "./slug";
 
 export function parseBundle(files: Record<string, string>): ModelGraph {
   const docs = Object.entries(files).filter(([p]) => p.endsWith(".md") && !p.endsWith("index.md"));
@@ -10,8 +10,8 @@ export function parseBundle(files: Record<string, string>): ModelGraph {
     const owox = data.owox || {};
     const ov = parseOverview(body);
     const title = data.title || "Untitled";
-    const key = owox.key || slugify(title, path);
     const fileSlug = path.split("/").pop()!.replace(/\.md$/, "");
+    const key = owox.key || fileSlug;
     slugToKey.set(fileSlug, key);
     const schema = parseSchema(body);
     pkByKey.set(key, schema.find(f => f.pk)?.name);
@@ -28,7 +28,8 @@ export function parseBundle(files: Record<string, string>): ModelGraph {
   const raw: { from: string; to: string; keys: { left: string; right: string }[] }[] = [];
   for (const [path, text] of docs) {
     const { data, body } = parseFrontmatter(text);
-    const fromKey = (data.owox && data.owox.key) || slugify(data.title || "", path);
+    const fromSlug = path.split("/").pop()!.replace(/\.md$/, "");
+    const fromKey = (data.owox && data.owox.key) || fromSlug;
     const fromSchema = parseSchema(body);
     for (const ln of body.split("\n")) {
       const m = ln.match(/^- \[.*?\]\(\.\/(.+?)\.md\)\s*(?:—|--)?\s*(.*)$/);

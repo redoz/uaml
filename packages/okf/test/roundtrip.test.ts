@@ -87,4 +87,32 @@ describe("serialize → parse round-trip (superset)", () => {
     expect(back.edges).toHaveLength(1);
     expect(back.edges[0]).toMatchObject({ from: "orders", to: "customers", keys: [{ left: "customer_id", right: "id" }] });
   });
+
+  it("keeps both nodes when two titles slugify to the same value", () => {
+    const collidingGraph: ModelGraph = {
+      storageId: null,
+      nodes: [
+        { key: "posts", title: "Posts Answers", inputSource: "SQL", status: "pending", owoxId: null, position: { x: 0, y: 0 },
+          schema: [{ name: "id", type: "STRING", pk: true }] },
+        { key: "answers", title: "Posts & Answers", inputSource: "SQL", status: "pending", owoxId: null, position: { x: 0, y: 0 },
+          schema: [{ name: "post_id", type: "STRING", pk: false }] },
+      ],
+      edges: [{ id: "e1", from: "posts", to: "answers", keys: [{ left: "id", right: "post_id" }], bidirectional: false }],
+    };
+
+    const { files } = serializeBundle(collidingGraph, "Demo");
+    const martFiles = Object.keys(files).filter(f => !f.endsWith("index.md"));
+    expect(martFiles).toHaveLength(2);
+
+    const back = parseBundle(files);
+    expect(back.nodes).toHaveLength(2);
+    const keys = back.nodes.map(n => n.key);
+    expect(new Set(keys).size).toBe(2);
+
+    expect(back.edges).toHaveLength(1);
+    const edge = back.edges[0];
+    expect(edge.from).not.toBe(edge.to);
+    expect(keys).toContain(edge.from);
+    expect(keys).toContain(edge.to);
+  });
 });

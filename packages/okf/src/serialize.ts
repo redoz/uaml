@@ -5,7 +5,15 @@ export interface OkfBundle { files: Record<string, string>; }
 
 export function serializeBundle(graph: ModelGraph, projectTitle = "Data Marts"): OkfBundle {
   const folder = slugify(projectTitle, "data-marts");
-  const slugByKey = new Map(graph.nodes.map(n => [n.key, slugify(n.title, n.key)]));
+  const slugByKey = new Map<string, string>();
+  const taken = new Set<string>();
+  for (const n of graph.nodes) {
+    const s = slugify(n.title, n.key);
+    let u = s; let i = 2;
+    while (taken.has(u)) u = `${s}-${i++}`;
+    taken.add(u);
+    slugByKey.set(n.key, u);
+  }
   const files: Record<string, string> = {};
   for (const n of graph.nodes) files[`${folder}/${slugByKey.get(n.key)}.md`] = renderNode(n, graph, slugByKey);
   const rows = graph.nodes.map(n =>
