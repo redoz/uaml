@@ -288,7 +288,12 @@ function CanvasInner() {
   }, [viewMode]);
 
   const handleImportConfirm = useCallback((g: ModelGraph) => {
-    store.set(withLayout(g));
+    // Keep the currently-selected storage. The OKF bundle format doesn't carry a
+    // storageId (parse returns null), so taking the imported value would blank the
+    // selection — the TopBar select still shows a storage, but push would then
+    // fail with "No storage selected". Fall back to the imported id only when no
+    // storage is selected yet. (Mirrors handleUseTemplate.)
+    store.set({ ...withLayout(g), storageId: store.get().storageId ?? g.storageId });
     setShowImport(false);
   }, [withLayout]);
 
