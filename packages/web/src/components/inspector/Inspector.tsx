@@ -2,6 +2,8 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import type { ModelNode, ModelEdge } from "@mc/okf";
 import { ObjectInspector } from "./ObjectInspector";
 import { RelationshipInspector } from "./RelationshipInspector";
+import { QuestionsPanel } from "./QuestionsPanel";
+import type { BusinessGoal } from "../../state/goal";
 import { joinFieldType } from "../../sync/joinFieldType";
 
 type Selection =
@@ -16,6 +18,7 @@ interface InspectorProps {
   onUpdateNode: (key: string, patch: Partial<ModelNode>) => void;
   onUpdateEdge: (id: string, patch: Partial<ModelEdge>) => void;
   onClose: () => void;
+  goal?: BusinessGoal | null;
 }
 
 const MIN_WIDTH = 320;
@@ -58,7 +61,7 @@ function ReopenTab({ onClick }: { onClick: () => void }) {
 }
 
 export function Inspector({
-  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose,
+  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose, goal,
 }: InspectorProps) {
   const [open, setOpen] = useState(true);
   const [width, setWidth] = useState(320);
@@ -151,10 +154,15 @@ export function Inspector({
       {/* Body */}
       <div className="px-4 py-4 overflow-y-auto flex-1 min-h-0">
         {selectedNode ? (
-          <ObjectInspector
-            node={selectedNode}
-            onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
-          />
+          <>
+            <ObjectInspector
+              node={selectedNode}
+              onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
+            />
+            {goal && (
+              <QuestionsPanel node={selectedNode} nodes={nodes} edges={edges} goal={goal} />
+            )}
+          </>
         ) : selectedEdge ? (
           <RelationshipInspector
             edge={selectedEdge}
