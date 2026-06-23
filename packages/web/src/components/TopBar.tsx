@@ -14,6 +14,7 @@ export interface TopBarProps {
   storageId?: string | null;
   onStorageChange?: (id: string) => void;
   onImport?: () => void;
+  onImportFromOwox?: () => void;
   onExport?: () => void;
   onPush?: () => void;
   onLibrary?: () => void;
@@ -48,7 +49,7 @@ const LOGO = (
 
 export function TopBar({
   pendingCount = 0, storages = [], storageId, onStorageChange,
-  onImport, onExport, onPush, onLibrary,
+  onImport, onImportFromOwox, onExport, onPush, onLibrary,
   signedIn, projectTitle, onSignIn, onSignOut,
 }: TopBarProps) {
   // Show the Library hint on first ever visit; stays lit until hovered.
@@ -117,6 +118,16 @@ export function TopBar({
           </div>
         )}
       </div>
+
+      {/* Import from OWOX project */}
+      {signedIn && (
+        <button
+          onClick={onImportFromOwox}
+          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7]"
+        >
+          <Download size={15} /> Import from OWOX project
+        </button>
+      )}
 
       {/* Import OKF */}
       <button

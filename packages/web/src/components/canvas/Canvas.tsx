@@ -34,6 +34,8 @@ import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { TopBar, type StorageOption } from "../TopBar";
 import { ImportDialog } from "../ImportDialog";
+import { OwoxImportDialog } from "../OwoxImportDialog";
+import { mergeGraphs } from "../../sync/owoxImport";
 import { LibraryDialog } from "../LibraryDialog";
 import { SignInModal } from "../SignInModal";
 import { pushIntent } from "../../sync/pushGate";
@@ -99,6 +101,7 @@ function CanvasInner() {
   const [tool, setTool] = useState<Tool>("select");
   const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode());
   const [showImport, setShowImport] = useState(false);
+  const [showOwoxImport, setShowOwoxImport] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [pushing, setPushing] = useState(false);
   const [pushResult, setPushResult] = useState<PushResult | null>(null);
@@ -297,6 +300,19 @@ function CanvasInner() {
     setShowImport(false);
   }, [withLayout]);
 
+  const handleOwoxImportConfirm = useCallback((g: ModelGraph, mode: "replace" | "merge") => {
+    if (mode === "replace") {
+      store.set({ ...withLayout(g), storageId: g.storageId });
+    } else {
+      const { graph, newKeys } = mergeGraphs(store.get(), g);
+      // Lay out the whole merged graph but keep existing nodes' positions —
+      // only newly added nodes take the computed Dagre position.
+      const positions = runDagreLayout(graph.nodes, graph.edges, viewMode);
+      store.set({ ...graph, nodes: graph.nodes.map(n => newKeys.has(n.key) ? { ...n, position: positions.get(n.key) ?? n.position } : n) });
+    }
+    setShowOwoxImport(false);
+  }, [withLayout, viewMode]);
+
   const handleUseTemplate = useCallback((g: ModelGraph) => {
     // Keep the model on the currently selected storage; auto-layout the template.
     store.set({ ...withLayout(g), storageId: store.get().storageId });
@@ -343,6 +359,7 @@ function CanvasInner() {
         storageId={graph.storageId}
         onStorageChange={handleStorageChange}
         onImport={() => setShowImport(true)}
+        onImportFromOwox={() => setShowOwoxImport(true)}
         onExport={handleExport}
         onPush={handlePush}
         onLibrary={() => setShowLibrary(true)}
@@ -363,6 +380,13 @@ function CanvasInner() {
         <ImportDialog
           onConfirm={handleImportConfirm}
           onClose={() => setShowImport(false)}
+        />
+      )}
+      {showOwoxImport && (
+        <OwoxImportDialog
+          storages={storages}
+          onConfirm={handleOwoxImportConfirm}
+          onClose={() => setShowOwoxImport(false)}
         />
       )}
       {showLibrary && (

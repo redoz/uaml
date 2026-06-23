@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { parseApiKey, exchangeToken, OwoxClient } from "../src/owox/client";
+import list from "./fixtures/owox-list.json";
+import detail from "./fixtures/owox-detail.json";
+import graph from "./fixtures/owox-relationships-graph.json";
 
 const KEY = "owox_key_" + Buffer.from(JSON.stringify({
   apiOrigin: "https://app.owox.com", apiKeyId: "kid_1", apiKeySecret: "sec_1",
@@ -51,5 +54,43 @@ describe("OwoxClient.listDataMarts", () => {
     const headers = (fetchMock.mock.calls[0][1] as any).headers;
     expect(headers["x-owox-authorization"]).toBe("Bearer tok_1");
     expect(headers["X-OWOX-Api-Key-Id"]).toBe("kid_1");
+  });
+});
+
+describe("OwoxClient read methods", () => {
+  const clientWith = (body: unknown) => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(body), { status: 200 }));
+    return { c: new OwoxClient("https://app.owox.com", "tok", "kid", fetchMock as any), fetchMock };
+  };
+
+  it("getImportMart normalizes schema (incl. pk/alias/description) + SQL definition", async () => {
+    const { c } = clientWith(detail);
+    const m = await c.getImportMart(detail.id);
+    expect(m).toMatchObject({ id: detail.id, title: detail.title, inputSource: "SQL" });
+    expect(m.definition).toContain("SELECT");
+    // session_id is the primary key in the fixture
+    expect(m.schema.find(f => f.name === "session_id")).toMatchObject({ type: "STRING", pk: true });
+    expect(m.schema.find(f => f.name === "date")).toMatchObject({ pk: false });
+  });
+
+  it("getRelationshipGraph maps nodes to source/target ids, skips cycle stubs, dedupes by id", async () => {
+    const { c } = clientWith(graph);
+    const out = await c.getRelationshipGraph(graph.rootDataMartId);
+    // fixture: 2 direct (depth 1) edges + 1 isCycleStub:true node → stub dropped
+    expect(out).toHaveLength(2);
+    expect(out[0]).toEqual({
+      sourceId: "b4f59656-d52e-4ae3-847e-c34c025956bf",
+      targetId: "61b3c045-b334-440d-9913-bf52bc622af4",
+      joinConditions: [{ sourceFieldName: "traffic_source_id", targetFieldName: "traffic_source_id" }],
+    });
+  });
+
+  it("listDataMartsForStorage matches on storage title + type", async () => {
+    const { c } = clientWith(list);
+    const out = await c.listDataMartsForStorage("BigQuery [Common]", "GOOGLE_BIGQUERY");
+    expect(out.map(m => m.id)).toEqual([
+      "d57170ef-8de5-4475-bbfb-61b20a72b051",
+      "b4f59656-d52e-4ae3-847e-c34c025956bf",
+    ]);
   });
 });

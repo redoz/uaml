@@ -1,0 +1,57 @@
+[
+  {
+    "id": "09d22a0f-76ff-4729-b52a-0668960d241e",
+    "title": "Snowflake [Marketing]",
+    "type": "SNOWFLAKE"
+  },
+  {
+    "id": "34032e69-358c-4b53-b3be-828aba568e6e",
+    "title": "AWS Redshift [Common]",
+    "type": "AWS_REDSHIFT"
+  },
+  {
+    "id": "5a10829b-347b-4c2d-ad40-f1c962068d6d",
+    "title": "AWS Athena [Marketing]",
+    "type": "AWS_ATHENA"
+  },
+  {
+    "id": "616c3176-3390-4759-8bb7-cf39aff8dfcc",
+    "title": "Databricks [Common]",
+    "type": "DATABRICKS"
+  },
+  {
+    "id": "77e9d96a-60ba-4afa-84ee-c273e5e94200",
+    "title": "AWS Athena [Common]",
+    "type": "AWS_ATHENA"
+  },
+  {
+    "id": "882e81db-a88c-4ef2-9f83-fefd0199e7a1",
+    "title": "BQ [eCommerce]",
+    "type": "GOOGLE_BIGQUERY"
+  },
+  {
+    "id": "90abccb1-dee9-42e8-bbfc-080becd9799e",
+    "title": "AWS Redshift [Marketing]",
+    "type": "AWS_REDSHIFT"
+  },
+  {
+    "id": "93908b10-326a-455e-9f80-87ddea31d6e7",
+    "title": "Snowflake [Common]",
+    "type": "SNOWFLAKE"
+  },
+  {
+    "id": "c9aefbda-59f5-49e6-9e6b-fe29015b90ce",
+    "title": "BigQuery [Common]",
+    "type": "GOOGLE_BIGQUERY"
+  },
+  {
+    "id": "efaf1bfc-9068-4ba8-8d6d-ea0bbbed4a1f",
+    "title": "Databricks [Marketing]",
+    "type": "DATABRICKS"
+  },
+  {
+    "id": "fac9fb21-e2f5-4f27-ac7a-ed29a46bd0dd",
+    "title": "BQ [Marketing]",
+    "type": "GOOGLE_BIGQUERY"
+  }
+]

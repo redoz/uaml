@@ -1,4 +1,4 @@
-import type { OwoxKeyParts, DataMartListItem, CreateDataMartInput } from "./types";
+import type { OwoxKeyParts, DataMartListItem, CreateDataMartInput, ImportMart, ImportRelationship } from "./types";
 type FetchFn = typeof fetch;
 
 // Allowlist for the apiOrigin embedded in a user-supplied key. Without this,
@@ -80,5 +80,59 @@ export class OwoxClient {
   // body { targetDataMartId, targetAlias (required), joinConditions:[{sourceFieldName,targetFieldName}] }.
   createRelationship(sourceId: string, body: { targetDataMartId: string; targetAlias: string; joinConditions: { sourceFieldName: string; targetFieldName: string }[] }) {
     return this.json<{ id: string }>("POST", `/api/data-marts/${encodeURIComponent(sourceId)}/relationships`, body);
+  }
+  // A storage's marts, matched by storage title + type (list items carry
+  // storage:{type,title} but NO storage id). Reuses listDataMarts (paginates),
+  // which passes raw page items through unchanged so storage survives.
+  async listDataMartsForStorage(storageTitle: string, storageType: string): Promise<{ id: string; title: string; status?: string }[]> {
+    const all = (await this.listDataMarts()) as any[];
+    return all
+      .filter(m => m.storage?.title === storageTitle && m.storage?.type === storageType)
+      .map(m => ({ id: m.id, title: m.title, status: m.status }));
+  }
+
+  async getImportMart(id: string): Promise<ImportMart> {
+    const d = await this.getDataMart(id);
+    const fields: any[] = d.schema?.fields ?? [];
+    const dt: string | undefined = d.definitionType;
+    const def = d.definition ?? {};
+    // SQL → sqlQuery; VIEW/TABLE → fullyQualifiedName; CONNECTOR → null (config too complex).
+    const definition =
+      dt === "SQL" ? (def.sqlQuery ?? null)
+      : (dt === "TABLE" || dt === "VIEW") ? (def.fullyQualifiedName ?? null)
+      : null;
+    const inputSource = (dt === "SQL" || dt === "TABLE" || dt === "VIEW" || dt === "CONNECTOR") ? dt : "SQL";
+    return {
+      id: d.id ?? id, title: d.title ?? "", status: d.status,
+      schema: fields.map(f => ({
+        name: f.name, type: f.type, pk: !!f.isPrimaryKey,
+        ...(f.alias ? { alias: f.alias } : {}),
+        ...(f.description ? { description: f.description } : {}),
+      })),
+      inputSource, definition,
+    };
+  }
+
+  // Read the relationship graph rooted at this mart. The graph spans the whole
+  // connected component (transitive, with depth); every node.relationship is a
+  // real DIRECT edge with its own join keys. Skip isCycleStub (cycle-break
+  // duplicates) and dedupe by relationship.id within this call.
+  async getRelationshipGraph(id: string): Promise<ImportRelationship[]> {
+    const g = await this.json<{ nodes?: any[] }>("GET", `/api/data-marts/${encodeURIComponent(id)}/relationships/graph`).catch(() => ({ nodes: [] }));
+    const seen = new Set<string>();
+    const out: ImportRelationship[] = [];
+    for (const n of g.nodes ?? []) {
+      if (n.isCycleStub) continue;
+      const r = n.relationship; if (!r || seen.has(r.id)) continue;
+      seen.add(r.id);
+      out.push({
+        sourceId: r.sourceDataMart.id,
+        targetId: r.targetDataMart.id,
+        joinConditions: (r.joinConditions ?? []).map((j: any) => ({
+          sourceFieldName: j.sourceFieldName, targetFieldName: j.targetFieldName,
+        })),
+      });
+    }
+    return out;
   }
 }
