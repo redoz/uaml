@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "id": "d57170ef-8de5-4475-bbfb-61b20a72b051",
+      "title": "Purchases List",
+      "status": "PUBLISHED",
+      "storage": {
+        "type": "GOOGLE_BIGQUERY",
+        "title": "BigQuery [Common]"
+      },
+      "definitionType": "VIEW"
+    },
+    {
+      "id": "b4f59656-d52e-4ae3-847e-c34c025956bf",
+      "title": "🥇 Growth (E-Commerce)",
+      "status": "PUBLISHED",
+      "storage": {
+        "type": "GOOGLE_BIGQUERY",
+        "title": "BigQuery [Common]"
+      },
+      "definitionType": "SQL"
+    },
+    {
+      "id": "3fffbbc7-6ddc-45e7-bff5-c7a49d4dc5ff",
+      "title": "E-Commerce growth [demo Databricks]",
+      "status": "PUBLISHED",
+      "storage": {
+        "type": "DATABRICKS",
+        "title": "Databricks [Common]"
+      },
+      "definitionType": "SQL"
+    }
+  ],
+  "total": 83,
+  "nextOffset": null
+}

@@ -1,12 +1,43 @@
 {
-  "id": "dm_1",
-  "title": "Orders",
+  "id": "b4f59656-d52e-4ae3-847e-c34c025956bf",
+  "title": "🥇 Growth (E-Commerce)",
   "status": "PUBLISHED",
-  "storageId": "st_1",
+  "storage": {
+    "id": "c9aefbda-59f5-49e6-9e6b-fe29015b90ce",
+    "title": "BigQuery [Common]",
+    "type": "GOOGLE_BIGQUERY"
+  },
   "definitionType": "SQL",
-  "definition": { "sqlQuery": "SELECT * FROM orders" },
-  "schema": { "fields": [
-    { "name": "id", "type": "INTEGER", "isPrimaryKey": true },
-    { "name": "customer_id", "type": "INTEGER" }
-  ] }
+  "definition": {
+    "sqlQuery": "SELECT date, session_id, visitor_id,\n         traffic_source_id, country_id, cus"
+  },
+  "schema": {
+    "type": "bigquery-data-mart-schema",
+    "fields": [
+      {
+        "name": "date",
+        "type": "DATE",
+        "alias": "Date",
+        "description": "The calendar date when the session occurred.",
+        "isPrimaryKey": false,
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "session_id",
+        "type": "STRING",
+        "alias": "Session ID",
+        "description": "Unique identifier for an individual web or app session.",
+        "isPrimaryKey": true,
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "visitor_id",
+        "type": "STRING",
+        "alias": "Visitor ID",
+        "description": "Unique identifier for the anonymous visitor or browser.",
+        "isPrimaryKey": false,
+        "mode": "NULLABLE"
+      }
+    ]
+  }
 }

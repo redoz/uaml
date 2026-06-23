@@ -1,0 +1,74 @@
+{
+  "rootDataMartId": "b4f59656-d52e-4ae3-847e-c34c025956bf",
+  "nodes": [
+    {
+      "relationship": {
+        "id": "b593aade-ca8f-4a54-96a9-326a722c8ec9",
+        "sourceDataMart": {
+          "id": "b4f59656-d52e-4ae3-847e-c34c025956bf",
+          "title": "🥇 Growth (E-Commerce)"
+        },
+        "targetDataMart": {
+          "id": "61b3c045-b334-440d-9913-bf52bc622af4",
+          "title": "🥈 Traffic Sources (E-Commerce)"
+        },
+        "targetAlias": "traffic_sources_e_commerce",
+        "joinConditions": [
+          {
+            "sourceFieldName": "traffic_source_id",
+            "targetFieldName": "traffic_source_id"
+          }
+        ]
+      },
+      "depth": 1,
+      "isCycleStub": false,
+      "isBlocked": false
+    },
+    {
+      "relationship": {
+        "id": "21a15703-9365-4f8c-9880-75432ab5638e",
+        "sourceDataMart": {
+          "id": "b4f59656-d52e-4ae3-847e-c34c025956bf",
+          "title": "🥇 Growth (E-Commerce)"
+        },
+        "targetDataMart": {
+          "id": "bad7e127-2352-4663-8b68-cbd06a9c0eb7",
+          "title": "🥈 Countries (E-Commerce)"
+        },
+        "targetAlias": "countries_e_commerce",
+        "joinConditions": [
+          {
+            "sourceFieldName": "country_id",
+            "targetFieldName": "country_id"
+          }
+        ]
+      },
+      "depth": 1,
+      "isCycleStub": false,
+      "isBlocked": false
+    },
+    {
+      "relationship": {
+        "id": "2618cc5e-38f9-429a-8606-4c94af98fc84",
+        "sourceDataMart": {
+          "id": "5a7b5950-330c-4833-add0-033097440fe7",
+          "title": "🥈 Pages (E-Commerce)"
+        },
+        "targetDataMart": {
+          "id": "ebcc639a-e474-418a-8f62-36e222c61e2e",
+          "title": "🥈 Pageviews (E-Commerce)"
+        },
+        "targetAlias": "pageviews_e_commerce",
+        "joinConditions": [
+          {
+            "sourceFieldName": "page_id",
+            "targetFieldName": "page_id"
+          }
+        ]
+      },
+      "depth": 5,
+      "isCycleStub": true,
+      "isBlocked": false
+    }
+  ]
+}
