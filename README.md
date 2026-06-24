@@ -42,7 +42,9 @@ Auth is **optional** — only **Push** needs it. To connect, create an OWOX API 
 
 ## Insight Questions (LLM)
 
-Clicking the bullseye **Business Goal** button in the top bar opens a dialog where you set a niche and goal. Once set, a "Questions this unlocks" panel appears on any selected data mart, displaying LLM-generated questions prompted by Gemini Flash-Lite. This feature requires `GEMINI_API_KEY` to be set in the server environment (obtained from [Google AI Studio](https://aistudio.google.com/apikey)); if unset, the panel displays a clean error state. Only schema metadata (mart titles, descriptions, field names) is sent to Google; no row-level data is transmitted. Responses are cached by focus and goal.
+Clicking the **Business Goal** button in the top bar opens a dialog where you set a niche and goal. Once set, a "Questions this unlocks" panel appears on any selected data mart, displaying LLM-generated questions prompted by Gemini Flash-Lite. Only schema metadata (mart titles, descriptions, field names) is sent to Google; no row-level data is transmitted. Responses are cached by focus and goal.
+
+> **Deploy flag — `GEMINI_API_KEY` is required per environment for AI to actually run.** The Business Goal button and the questions panel are **always visible** (so the feature is discoverable), but generating questions calls Gemini and needs `GEMINI_API_KEY` set in *that* server's environment (get one from [Google AI Studio](https://aistudio.google.com/apikey)). It's set on **production** but is **not** inherited by branch/preview deploys (`sync: false` in `render.yaml`) — there the nav still shows and the panel displays a graceful "AI question suggestions aren't enabled on this deployment" note instead of generating. To enable AI on a given deploy, set `GEMINI_API_KEY` in its env. Locally: `GEMINI_API_KEY=… PORT=3111 pnpm --filter @mc/server start`.
 
 ## Security
 
