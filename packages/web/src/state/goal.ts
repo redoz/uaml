@@ -9,61 +9,118 @@ export interface NichePreset {
   goals: string[];
 }
 
-// Default verticals and five non-trivial goals each (from the design spec).
+// Ten verticals with five sharp, metric-driven goals each. These feed the AI
+// "Insight Questions" — phrased as the levers a senior analyst would actually
+// chase (named KPIs, cohorts and funnel stages), not generic aspirations.
 export const NICHE_PRESETS: NichePreset[] = [
   {
     id: "ecommerce",
     label: "E-commerce / Retail",
     goals: [
       "Increase ROAS while holding CPC",
-      "Lower CAC at equal order volume",
-      "Raise repeat-purchase rate / LTV",
-      "Reduce cart abandonment",
-      "Optimise margin by product category",
+      "Lift contribution margin per order after shipping & returns",
+      "Raise 90-day repeat-purchase rate and cohort LTV",
+      "Cut return/refund rate on high-AOV categories",
+      "Recover revenue lost to cart & checkout abandonment",
     ],
   },
   {
     id: "saas",
     label: "SaaS / Subscription",
     goals: [
-      "Reduce monthly churn / raise retention",
-      "Grow expansion revenue (NRR)",
-      "Shorten time-to-value",
-      "Raise trial-to-paid conversion",
-      "Reduce CAC payback period",
+      "Lift Net Revenue Retention (NRR) above 110%",
+      "Cut logo & gross-revenue churn in the first 90 days",
+      "Raise trial-to-paid conversion without discounting",
+      "Shorten CAC payback below 12 months",
+      "Grow expansion MRR from seat & usage upsell",
     ],
   },
   {
     id: "leadgen",
-    label: "Lead-gen / B2B services",
+    label: "B2B Marketing / Lead-gen",
     goals: [
-      "Improve lead-to-SQL-to-deal conversion",
-      "Lower cost per qualified lead",
-      "Shorten sales-cycle length",
-      "Raise average deal size",
-      "Improve channel attribution to closed deals",
+      "Improve MQL → SQL → Closed-Won conversion across the funnel",
+      "Lower blended cost per SQL by channel",
+      "Fix multi-touch attribution to closed-won revenue",
+      "Shorten sales-cycle length for mid-market deals",
+      "Raise pipeline velocity (deals × win-rate × ACV ÷ cycle)",
     ],
   },
   {
-    id: "mobile",
-    label: "Mobile app / Gaming",
+    id: "mobile_gaming",
+    label: "Mobile App / Gaming",
     goals: [
-      "Raise D1/D7/D30 retention",
-      "Grow ARPDAU",
-      "Lower CPI at equal user quality",
-      "Raise payer conversion",
-      "Optimise the onboarding funnel",
+      "Raise D1 / D7 / D30 retention curves",
+      "Grow ARPDAU without hurting retention",
+      "Lift payer conversion and ARPPU",
+      "Lower CPI while holding D7 ROAS on install quality",
+      "De-bottleneck the FTUE / onboarding funnel",
     ],
   },
   {
-    id: "finance",
-    label: "Finance / Fintech",
+    id: "fintech_lending",
+    label: "Fintech / Lending",
     goals: [
-      "Lower cost to acquire an active customer",
-      "Raise account activation / usage",
-      "Reduce fraud / chargeback rate",
-      "Grow cross-product adoption",
-      "Improve approval-to-funding conversion",
+      "Raise approved → funded conversion (pull-through rate)",
+      "Cut first-payment default & charge-off by origination cohort",
+      "Improve fraud capture without raising false-positive declines",
+      "Grow funded-account activation & deposit balances",
+      "Lift portfolio yield / net interest margin per risk segment",
+    ],
+  },
+  {
+    id: "marketplace",
+    label: "Marketplace / Platform",
+    goals: [
+      "Raise liquidity (search → transaction match rate)",
+      "Improve supply utilization & seller activation",
+      "Optimise take rate without suppressing GMV",
+      "Cut fill-rate failures and time-to-match",
+      "Grow repeat rate on both buyer & seller sides",
+    ],
+  },
+  {
+    id: "ott_media",
+    label: "Subscription Media / OTT",
+    goals: [
+      "Cut subscriber churn with engagement-based retention",
+      "Lift average watch time & content completion rate",
+      "Improve content ROI (cost per retained viewer-hour)",
+      "Raise free / ad-tier → paid conversion",
+      "Reduce involuntary churn via failed-payment recovery",
+    ],
+  },
+  {
+    id: "delivery_logistics",
+    label: "On-demand Delivery / Logistics",
+    goals: [
+      "Raise on-time delivery rate at peak load",
+      "Cut cost per delivery through batching & routing",
+      "Shorten time-to-assign and end-to-end delivery time",
+      "Lower order cancellation & failed-delivery rate",
+      "Balance courier supply vs demand by zone & hour",
+    ],
+  },
+  {
+    id: "healthcare",
+    label: "Healthcare Provider",
+    goals: [
+      "Cut 30-day readmission rate",
+      "Reduce appointment no-show & late-cancellation rate",
+      "Shorten revenue-cycle AR days & lower denial rate",
+      "Optimise length-of-stay and clinic/bed utilization",
+      "Improve patient throughput (door-to-provider time)",
+    ],
+  },
+  {
+    id: "insurance",
+    label: "Insurance (P&C)",
+    goals: [
+      "Lower loss ratio by underwriting segment",
+      "Improve combined ratio (loss + expense)",
+      "Raise policy renewal / retention rate",
+      "Lift quote-to-bind (hit) ratio profitably",
+      "Cut claims cycle time & claims leakage",
     ],
   },
 ];

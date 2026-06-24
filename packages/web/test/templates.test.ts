@@ -4,7 +4,7 @@ import { serializeBundle, parseBundle } from "@mc/okf";
 
 describe("templates", () => {
   it("ships the base models", () => {
-    expect(TEMPLATES.map(t => t.id).sort()).toEqual(["crypto_bitcoin", "ecommerce", "finance", "medical", "saas", "stackoverflow"]);
+    expect(TEMPLATES.map(t => t.id).sort()).toEqual(["crypto_bitcoin", "ecommerce", "finance", "marketing_ads", "marketplace", "medical", "mobile_gaming", "saas", "stackoverflow"]);
   });
 
   for (const t of TEMPLATES) {
