@@ -349,9 +349,16 @@ function CanvasInner() {
   // if the clipboard API is blocked (insecure context / permissions).
   const handleShare = useCallback(async () => {
     const url = buildShareUrl(store.get());
+    // The whole model rides in the link's #hash, so it works on whatever origin
+    // serves the app. On localhost that's only this machine — flag it so a local
+    // dev doesn't think the link is broken; on model.owox.com it just works.
+    const isLocal = /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+    const msg = isLocal
+      ? "Link copied — note: a localhost link only opens on this machine. Deploy to share it."
+      : "Link copied — anyone with it can open this model.";
     try {
       await navigator.clipboard.writeText(url);
-      setShareToast("Link copied — anyone with it can open this model.");
+      setShareToast(msg);
     } catch {
       window.prompt("Copy this shareable link:", url);
     }

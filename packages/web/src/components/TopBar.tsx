@@ -87,17 +87,17 @@ export function TopBar({
         <span>Model Canvas</span>
       </div>
 
-      {/* Business Goal — low-key icon-only entry point for Insight Questions.
-          Hidden unless the server reports GEMINI_API_KEY is set (questionsEnabled),
-          so the experimental feature is a pure env-only on/off switch. */}
+      {/* Business Goal — entry point for Insight Questions. Labelled (not icon-
+          only) so its purpose is clear. Hidden unless the server reports
+          GEMINI_API_KEY is set (questionsEnabled), so it's a pure env switch. */}
       {questionsEnabled && (
         <button
           onClick={onOpenGoal}
-          aria-label="Business Goal"
-          title="Business Goal — see questions your model unlocks"
-          className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center cursor-pointer transition-colors ${goalSet ? "text-[#1e88e5] bg-[#e6f1fb]" : "text-slate-400 hover:bg-[#f1f3f7] hover:text-slate-600"}`}
+          aria-label="Business goal — see the questions your model unlocks"
+          title="Set a business goal to see the questions your model unlocks"
+          className={`flex items-center gap-[6px] rounded-lg px-[10px] py-[6px] text-[13px] font-[550] cursor-pointer transition-colors ${goalSet ? "text-[#1e88e5] bg-[#e6f1fb]" : "text-slate-500 hover:bg-[#f1f3f7] hover:text-slate-900"}`}
         >
-          <Target size={17} />
+          <Target size={16} /> {goalSet ? "Business goal" : "Set business goal"}
         </button>
       )}
 
@@ -155,7 +155,7 @@ export function TopBar({
         onClick={onImport}
         className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7]"
       >
-        <Download size={15} /> Import OKF
+        <Download size={15} /> Import
       </button>
 
       {/* Export OKF */}
