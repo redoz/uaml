@@ -93,7 +93,7 @@ export function TopBar({
           onClick={onOpenGoal}
           aria-label="Business Goal"
           title="Business Goal — see questions your model unlocks"
-          className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center cursor-pointer transition-colors ${goalSet ? "text-[#4f46e5] bg-[#eef0fe]" : "text-slate-400 hover:bg-[#f1f3f7] hover:text-slate-600"}`}
+          className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center cursor-pointer transition-colors ${goalSet ? "text-[#1e88e5] bg-[#e6f1fb]" : "text-slate-400 hover:bg-[#f1f3f7] hover:text-slate-600"}`}
         >
           <Target size={17} />
         </button>
@@ -127,7 +127,7 @@ export function TopBar({
       <div className="relative">
         {/* Pulsing ring highlights the Library control on first visit */}
         {showLibraryHint && (
-          <span className="absolute -inset-[3px] rounded-[10px] ring-2 ring-[#4f46e5]/60 animate-pulse pointer-events-none" />
+          <span className="absolute -inset-[3px] rounded-[10px] ring-2 ring-[#1e88e5]/60 animate-pulse pointer-events-none" />
         )}
         <button
           onClick={() => { dismissLibraryHint(); onLibrary?.(); }}
@@ -169,7 +169,7 @@ export function TopBar({
       <div className="relative flex items-center">
         <button
           onClick={onPush}
-          className={`text-[13px] font-[550] bg-[#4f46e5] text-white border border-[#4f46e5] px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#4338ca] ${signedIn ? "rounded-l-lg border-r-0" : "rounded-lg"}`}
+          className={`text-[13px] font-[550] bg-[#1e88e5] text-white border border-[#1e88e5] px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#1976d2] ${signedIn ? "rounded-l-lg border-r-0" : "rounded-lg"}`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} width={15} height={15}>
             <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -183,7 +183,7 @@ export function TopBar({
               aria-label="More OWOX actions"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
-              className="text-white bg-[#4f46e5] border border-[#4f46e5] border-l border-l-[#6d64ee] rounded-r-lg px-[7px] py-[9px] cursor-pointer hover:bg-[#4338ca] flex items-center"
+              className="text-white bg-[#1e88e5] border border-[#1e88e5] border-l border-l-[#4d97e8] rounded-r-lg px-[7px] py-[9px] cursor-pointer hover:bg-[#1976d2] flex items-center"
             >
               <ChevronDown size={15} />
             </button>
