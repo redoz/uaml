@@ -19,6 +19,8 @@ interface InspectorProps {
   onUpdateEdge: (id: string, patch: Partial<ModelEdge>) => void;
   onClose: () => void;
   goal?: BusinessGoal | null;
+  questionsEnabled?: boolean;
+  onEditGoal?: () => void;
 }
 
 const MIN_WIDTH = 320;
@@ -61,7 +63,7 @@ function ReopenTab({ onClick }: { onClick: () => void }) {
 }
 
 export function Inspector({
-  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose, goal,
+  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose, goal, questionsEnabled, onEditGoal,
 }: InspectorProps) {
   const [open, setOpen] = useState(true);
   const [width, setWidth] = useState(320);
@@ -159,8 +161,14 @@ export function Inspector({
               node={selectedNode}
               onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
             />
-            {goal && (
-              <QuestionsPanel node={selectedNode} nodes={nodes} edges={edges} goal={goal} />
+            {questionsEnabled && (
+              <QuestionsPanel
+                node={selectedNode}
+                nodes={nodes}
+                edges={edges}
+                goal={goal ?? null}
+                onEditGoal={onEditGoal ?? (() => {})}
+              />
             )}
           </>
         ) : selectedEdge ? (

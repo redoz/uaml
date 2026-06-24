@@ -569,6 +569,8 @@ function CanvasInner() {
           onUpdateEdge={store.updateEdge}
           onClose={() => setSelection(null)}
           goal={goal}
+          questionsEnabled={questionsEnabled}
+          onEditGoal={() => setShowGoal(true)}
         />
       </div>
     </div>

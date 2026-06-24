@@ -15,19 +15,20 @@ const noop = () => {};
 afterEach(() => vi.restoreAllMocks());
 
 describe("Inspector + QuestionsPanel", () => {
-  it("shows the questions block for a selected node when a goal is set", () => {
-    vi.spyOn(qlib, "getQuestions").mockResolvedValue([{ question: "Q", unlockedBy: "U" }]);
+  it("shows the questions block when the feature is enabled (does not auto-generate)", () => {
+    const spy = vi.spyOn(qlib, "getQuestions").mockResolvedValue([{ question: "Q", unlockedBy: "U" }]);
     render(
       <Inspector selection={{ type: "node", id: "a" }} nodes={[node]} edges={[]} goal={GOAL}
-        onUpdateNode={noop} onUpdateEdge={noop} onClose={noop} />,
+        questionsEnabled onEditGoal={noop} onUpdateNode={noop} onUpdateEdge={noop} onClose={noop} />,
     );
     expect(screen.getByText(/Questions this unlocks/i)).toBeTruthy();
+    expect(spy).not.toHaveBeenCalled(); // generation is click-only
   });
 
-  it("hides the questions block when no goal is set", () => {
+  it("hides the questions block when the feature is disabled", () => {
     render(
-      <Inspector selection={{ type: "node", id: "a" }} nodes={[node]} edges={[]} goal={null}
-        onUpdateNode={noop} onUpdateEdge={noop} onClose={noop} />,
+      <Inspector selection={{ type: "node", id: "a" }} nodes={[node]} edges={[]} goal={GOAL}
+        questionsEnabled={false} onEditGoal={noop} onUpdateNode={noop} onUpdateEdge={noop} onClose={noop} />,
     );
     expect(screen.queryByText(/Questions this unlocks/i)).toBeNull();
   });
