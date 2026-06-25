@@ -21,3 +21,36 @@ describe("Google OKF v0.1 — marts", () => {
     expect(g.nodes.map(n => n.key)).not.toContain("badge_classes");
   });
 });
+
+describe("Google OKF v0.1 — bullet schema", () => {
+  const field = (g: ReturnType<typeof parseBundle>, key: string, name: string) =>
+    g.nodes.find(n => n.key === key)!.schema.find(f => f.name === name);
+
+  it("parses GA4 paren-type fields (- `name` (TYPE): desc)", () => {
+    const g = parseBundle(loadBundle("ga4"));
+    expect(field(g, "events_", "event_date")?.type).toBe("STRING");
+    expect(field(g, "events_", "event_timestamp")?.type).toBe("INTEGER");
+    expect(field(g, "events_", "event_name")?.type).toBe("STRING");
+  });
+
+  it("ignores GA4 enum-value rows that are not real fields", () => {
+    const g = parseBundle(loadBundle("ga4"));
+    const names = g.nodes.find(n => n.key === "events_")!.schema.map(f => f.name);
+    expect(names.some(n => n.includes(" ") || n.includes("="))).toBe(false);
+  });
+
+  it("parses Bitcoin type-after-colon and bare-type-before-colon styles", () => {
+    const g = parseBundle(loadBundle("crypto_bitcoin"));
+    // inputs.md: "*   `transaction_hash`: STRING"
+    expect(field(g, "inputs", "transaction_hash")?.type).toBe("STRING");
+    expect(field(g, "inputs", "value")?.type).toBe("NUMERIC");
+    // transactions.md: "- `hash` STRING REQUIRED: The hash of this transaction"
+    expect(field(g, "transactions", "hash")?.type).toBe("STRING");
+  });
+
+  it("parses Stack Overflow asterisk-marker fields", () => {
+    const g = parseBundle(loadBundle("stackoverflow"));
+    // users.md: "*   `id` (INTEGER) - Unique identifier for the user."
+    expect(field(g, "users", "id")?.type).toBe("INTEGER");
+  });
+});

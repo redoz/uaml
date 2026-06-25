@@ -133,7 +133,56 @@ function parseSchema(body: string): import("./types").SchemaField[] {
     }
     out.push(field);
   }
+  if (out.length === 0) return parseSchemaBullets(body);
   return out;
+}
+
+const TYPE_WORDS =
+  "STRING|BYTES|INTEGER|INT64|FLOAT|FLOAT64|NUMERIC|BIGNUMERIC|BOOLEAN|BOOL|" +
+  "TIMESTAMP|DATE|DATETIME|TIME|RECORD|STRUCT|GEOGRAPHY|JSON|INTERVAL";
+const TYPE_RE = new RegExp(`\\b(${TYPE_WORDS})\\b`, "i");
+
+// Fallback for Google OKF v0.1 bundles, whose `# Schema` sections are bullet
+// lists rather than markdown tables. Top-level bullets only; nested RECORD
+// children (indented) are skipped. Runs only when the table parser found nothing.
+function parseSchemaBullets(body: string): SchemaField[] {
+  const out: SchemaField[] = [];
+  let inSchema = false; let schemaLevel = 0;
+  for (const ln of body.split("\n")) {
+    const h = ln.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      const level = h[1].length;
+      if (/^schema\b/i.test(h[2].trim())) { inSchema = true; schemaLevel = level; continue; }
+      if (inSchema && level <= schemaLevel) break;   // section ends at same/higher heading
+      continue;                                       // sub-header inside Schema (GA4 "## event")
+    }
+    if (!inSchema) continue;
+    const m = ln.match(/^[-*]\s+`([^`]+)`(.*)$/);     // top-level bullet, no leading indent
+    if (!m) continue;
+    const name = m[1].trim();
+    if (!/^[\w.]+$/.test(name)) continue;             // skip enum-value rows like `key = 'x'`
+    out.push(parseFieldRest(name, m[2]));
+  }
+  return out;
+}
+
+// Extract type + description from the text after a field's backticked name,
+// tolerating: " (TYPE): desc", " (TYPE) - desc", " TYPE MODE: desc", ": TYPE".
+function parseFieldRest(name: string, rest: string): SchemaField {
+  let type = "STRING"; let description = "";
+  const paren = rest.match(/^\s*\(([^)]+)\)\s*[-:]?\s*(.*)$/);
+  if (paren) {
+    type = (paren[1].match(TYPE_RE)?.[1] ?? paren[1].trim()).toUpperCase();
+    description = paren[2].trim();
+  } else {
+    const tail = rest.replace(/^\s*[-:]\s*/, "");     // drop a leading separator
+    type = (tail.match(TYPE_RE)?.[1] ?? "STRING").toUpperCase();
+    const colon = tail.indexOf(":");
+    description = colon >= 0 ? tail.slice(colon + 1).trim() : "";
+  }
+  const field: SchemaField = { name, type, pk: false };
+  if (description) field.description = description;
+  return field;
 }
 
 function parseDefinition(body: string): string | null {
