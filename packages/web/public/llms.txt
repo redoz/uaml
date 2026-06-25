@@ -10,12 +10,19 @@ OWOX Model Canvas lets data analysts and marketers sketch a data model visually:
 - Import and export Open Knowledge Format (OKF) — a vendor-neutral markdown bundle for data models
 - Shareable model links — the whole model travels inside the URL, no account needed
 - Insight Questions (AI) — the business questions a model can answer, generated from schema metadata only
+- Build a model with AI — copy a short brief into Claude, ChatGPT or Gemini and import the OKF bundle it returns
 - Optional one-click push into OWOX Data Marts (requires an OWOX API key)
 
 ## Pricing
 Free. The canvas works fully without signing in. An OWOX API key is needed only to push a model into OWOX.
 
+## What is OKF (Open Knowledge Format)
+A vendor-neutral way to describe a data model as a folder of Markdown files with YAML frontmatter: one document per data mart, a schema table, and a Joins section for relationships. It is human-readable and agent-friendly — people can review it in a pull request and LLMs can author it. OWOX Model Canvas is the visual authoring/export front-end for this format; OWOX also publishes real OKF bundles at https://github.com/OWOX/models. Because the format is open text, models are portable and never locked in.
+
 ## Links
 - App: https://model.owox.com/
+- Build a model with AI (guide): https://model.owox.com/ai-instructions.html
+- OKF format spec for AI agents: https://model.owox.com/okf-format.md
 - OWOX Data Marts (the self-service analytics platform behind it): https://www.owox.com/
+- OWOX/models (example OKF bundles): https://github.com/OWOX/models
 - Get started free: https://www.owox.com/app-signup

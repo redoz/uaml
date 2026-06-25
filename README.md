@@ -1,5 +1,39 @@
 # OWOX Model Canvas
 
+<p align="center">
+  <img src=".github/assets/hero.png" alt="OWOX Model Canvas — a data model of six connected data marts (Customers, Orders, Web Sessions, Product, Order Items, Returns) on the canvas in field-level ERD view" width="900">
+</p>
+
+> Draw a data model on a free, anonymous canvas — then push it into OWOX Data Marts in one click.
+
+**▶ Open the live app: [model.owox.com](https://model.owox.com)** — free, no sign-in.
+
+OWOX Model Canvas is a Miro-like canvas for data people. Sketch your **data marts** (tables, views, SQL or connector outputs) as nodes and **joinable relationships** as edges, start from ready-made templates, see the business questions a model unlocks (AI), share it as a link, and — when you're ready — push the whole thing into [OWOX Data Marts](https://www.owox.com/) as drafts. The canvas is 100% free and works without an account; an OWOX API key is needed only to **Push**.
+
+## Why use it
+
+- **Free & anonymous** — design, template, AI-explore and share without signing in.
+- **Templates for real domains** — E-commerce, SaaS, Marketplace, Marketing / Lead-gen, Mobile / Gaming, Finance, Healthcare, plus public datasets (Bitcoin, Stack Overflow).
+- **Field-level ERD view** — see columns, primary keys and join keys, not just boxes.
+- **Insight Questions (AI)** — the business questions a model can answer, generated from schema metadata only (no row-level data leaves your browser).
+- **Build it with AI** — copy a short brief into Claude, ChatGPT or Gemini and it generates an importable model. In-app guide: [`/ai-instructions.html`](packages/web/public/ai-instructions.html).
+- **Shareable links** — the whole model travels inside the URL; anyone can open your exact diagram, no backend.
+- **One-click push to OWOX** — turn the diagram into draft Data Marts + joinable relationships.
+
+## Open Knowledge Format (OKF) — your model stays portable
+
+The canvas reads and writes **[Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog)** — a vendor-neutral way to describe a data model as a **folder of Markdown files** with YAML frontmatter: one document per data mart, a schema table, and a `## Joins` section for relationships. It's **human-readable and agent-friendly** — people can review it in a pull request and LLMs can author it.
+
+- **Author + export, as a pair.** Design visually here and **Export OKF** to get a bundle that round-trips — re-importing restores the model. OWOX publishes real bundles at **[OWOX/models](https://github.com/OWOX/models)**; this canvas is the visual authoring/export front-end for that same format.
+- **No lock-in.** Because the format is open and text-based, your model isn't trapped in a proprietary file — it lives in Markdown you own, in any git repo.
+- **Generate it with AI.** The exact format an assistant should follow is documented at [`/okf-format.md`](packages/web/public/okf-format.md); the in-app guide has a one-click **Copy AI instructions** button.
+
+That's what sets the canvas apart from generic ERD tools: the diagram is just a view over a portable, open model.
+
+---
+
+# Development
+
 A Miro-like canvas where drawing a data model creates draft OWOX Data Marts and joinable relationships via the OWOX API, with OKF import/export. A free, **anonymous-first** lead-gen tool: the whole canvas works without signing in — an OWOX API key is needed only to **Push** the model into OWOX.
 
 See `docs/superpowers/specs/` for the design and `docs/superpowers/plans/` for the implementation plan. The approved interaction/visual reference is `docs/superpowers/prototype/canvas.html`.
