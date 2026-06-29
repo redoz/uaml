@@ -1,6 +1,7 @@
 import type { Edge } from "@xyflow/react";
 import type { ModelNode, ModelEdge } from "@mc/okf";
 import type { ViewMode } from "../../state/viewMode";
+import type { RelLabelMode } from "../../state/relLabels";
 import { erdAwareNodeSize } from "./layoutSize";
 
 type Side = "left" | "right";
@@ -33,7 +34,7 @@ function edgeSides(
   return { source: storedSource ?? source, target: storedTarget ?? target };
 }
 
-function compactEdge(e: ModelEdge, sides: { source: Side; target: Side }): Edge {
+function compactEdge(e: ModelEdge, sides: { source: Side; target: Side }, relLabelMode: RelLabelMode): Edge {
   return {
     id: e.id,
     source: e.from,
@@ -41,7 +42,7 @@ function compactEdge(e: ModelEdge, sides: { source: Side; target: Side }): Edge 
     sourceHandle: sides.source,
     targetHandle: sides.target,
     type: "rel",
-    data: { keys: e.keys, bidirectional: e.bidirectional, cardinality: e.cardinality, modelEdgeId: e.id } as unknown as Record<string, unknown>,
+    data: { keys: e.keys, bidirectional: e.bidirectional, cardinality: e.cardinality, modelEdgeId: e.id, relLabelMode } as unknown as Record<string, unknown>,
   };
 }
 
@@ -57,11 +58,11 @@ export function isEdgeReconnectable(
   return viewMode !== "erd" && modelEdgeId != null && modelEdgeId === selectedEdgeId;
 }
 
-export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], viewMode: ViewMode): Edge[] {
+export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], viewMode: ViewMode, relLabelMode: RelLabelMode = "all"): Edge[] {
   const byKey = new Map(nodes.map(n => [n.key, n]));
 
   if (viewMode !== "erd") {
-    return edges.map(e => compactEdge(e, edgeSides(byKey.get(e.from), byKey.get(e.to), e, viewMode)));
+    return edges.map(e => compactEdge(e, edgeSides(byKey.get(e.from), byKey.get(e.to), e, viewMode), relLabelMode));
   }
 
   const fieldsByKey = new Map<string, Set<string>>(
@@ -71,7 +72,7 @@ export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], viewMode: V
   return edges.flatMap(e => {
     const sides = edgeSides(byKey.get(e.from), byKey.get(e.to), e, viewMode);
     const usable = e.keys.filter(k => k.left || k.right);
-    if (usable.length === 0) return [compactEdge(e, sides)];
+    if (usable.length === 0) return [compactEdge(e, sides, relLabelMode)];
 
     const srcFields = fieldsByKey.get(e.from);
     const tgtFields = fieldsByKey.get(e.to);
@@ -87,7 +88,7 @@ export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], viewMode: V
       sourceHandle: k.left && srcFields?.has(k.left) ? `${srcSide}:${k.left}` : sides.source,
       targetHandle: k.right && tgtFields?.has(k.right) ? `${tgtSide}:${k.right}` : sides.target,
       type: "rel",
-      data: { keys: [k], bidirectional: e.bidirectional, cardinality: e.cardinality, modelEdgeId: e.id } as unknown as Record<string, unknown>,
+      data: { keys: [k], bidirectional: e.bidirectional, cardinality: e.cardinality, modelEdgeId: e.id, relLabelMode } as unknown as Record<string, unknown>,
     }));
   });
 }
