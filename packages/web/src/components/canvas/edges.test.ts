@@ -113,6 +113,24 @@ describe("buildRfEdges cardinality passthrough", () => {
     const rf = buildRfEdges(edges, nodes, "erd");
     expect((rf[0].data as any).cardinality).toBe("N:1");
   });
+
+  it("threads the relLabelMode into edge data (compact)", () => {
+    const out = buildRfEdges([edge([{ left: "id", right: "a_id" }])], nodes, "compact", "defined");
+    expect((out[0].data as { relLabelMode?: string }).relLabelMode).toBe("defined");
+  });
+
+  it("threads the relLabelMode into every ERD per-key edge", () => {
+    const out = buildRfEdges(
+      [edge([{ left: "id", right: "a_id" }, { left: "x", right: "y" }])],
+      nodes, "erd", "undefined",
+    );
+    expect(out.every(e => (e.data as { relLabelMode?: string }).relLabelMode === "undefined")).toBe(true);
+  });
+
+  it("defaults the mode to 'all' when the arg is omitted", () => {
+    const out = buildRfEdges([edge([{ left: "id", right: "a_id" }])], nodes, "compact");
+    expect((out[0].data as { relLabelMode?: string }).relLabelMode).toBe("all");
+  });
 });
 
 describe("isEdgeReconnectable (only the selected relationship reconnects)", () => {
