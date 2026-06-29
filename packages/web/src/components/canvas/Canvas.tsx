@@ -55,6 +55,7 @@ import { WelcomeDialog } from "../WelcomeDialog";
 import { SignInModal } from "../SignInModal";
 import { PushConfirmDialog } from "../PushConfirmDialog";
 import { ClearCanvasDialog } from "../ClearCanvasDialog";
+import { NewModelDialog } from "../NewModelDialog";
 import { pushIntent } from "../../sync/pushGate";
 import { reconcileStorageId } from "../../sync/storageReconcile";
 import { Dock, type Tool } from "./Dock";
@@ -214,6 +215,7 @@ function CanvasInner() {
   const [signIn, setSignIn] = useState<{ mode: "connect" | "push" } | null>(null);
   const [showPushConfirm, setShowPushConfirm] = useState(false);
   const [showClear, setShowClear] = useState(false);
+  const [showNewModel, setShowNewModel] = useState(false);
   const { me, connect, signOut } = useAuth();
   // Supabase account ("Save your model") — independent of the OWOX connect above.
   const { user: account, signOut: accountSignOut } = useAccount();
@@ -541,12 +543,17 @@ function CanvasInner() {
     setShareToast("Version restored to the canvas — Save to keep it.");
   }, []);
 
-  // "New model" from the rail: warn before discarding a non-empty canvas, else
-  // just reset to a clean slate.
+  // "New model" from the rail: on a non-empty canvas, confirm with a calm "start
+  // fresh" dialog (not the red Clear-canvas warning); on an empty canvas, just
+  // reset to a clean slate.
   const handleNewModel = useCallback(() => {
-    if (store.get().nodes.length > 0) setShowClear(true);
+    if (store.get().nodes.length > 0) setShowNewModel(true);
     else clearCanvas();
   }, [clearCanvas]);
+
+  // Confirmed start-new: wipe to a fresh model (clearCanvas resets id + name).
+  const startNewModel = useCallback(() => { clearCanvas(); setShowNewModel(false); }, [clearCanvas]);
+  const exportAndStartNewModel = useCallback(() => { handleExport(); startNewModel(); }, [handleExport, startNewModel]);
 
   const handleUseTemplate = useCallback((g: ModelGraph, name: string) => {
     // Remember the matching niche so the Business Goal dialog can pre-pick it.
@@ -698,6 +705,15 @@ function CanvasInner() {
           onDelete={clearCanvas}
           onExportAndDelete={handleExportAndClear}
           onClose={() => setShowClear(false)}
+        />
+      )}
+      {showNewModel && (
+        <NewModelDialog
+          counts={{ marts: graph.nodes.length, relationships: graph.edges.length }}
+          savedModel={!!savedModelId}
+          onStart={startNewModel}
+          onExportAndStart={exportAndStartNewModel}
+          onClose={() => setShowNewModel(false)}
         />
       )}
       {showWelcome && (
