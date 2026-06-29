@@ -413,6 +413,7 @@ function CanvasInner() {
     // Only fire when clicking the pane (not on a node card or edge)
     const target = e.target as HTMLElement;
     if (target.closest(".react-flow__node") || target.closest(".react-flow__edge")) return;
+    if (target.closest("[data-dock]")) return; // double-clicking the toolbar shouldn't drop a node
     const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
     const n = store.addNode({ x: position.x - NODE_W / 2, y: position.y - NODE_H / 2 });
     setSelection({ type: "node", id: n.key });
@@ -794,14 +795,14 @@ function CanvasInner() {
           />
         )}
 
-        {/* Left tool dock */}
-        <Dock activeTool={tool} onToolChange={handleToolChange} viewMode={viewMode} onToggleView={handleToggleView} onClear={() => setShowClear(true)} clearDisabled={graph.nodes.length === 0} relLabelMode={relLabelMode} onRelLabelModeChange={handleRelLabelModeChange} />
-
         {/* React Flow canvas */}
         <div
           className={`flex-1 relative ${canvasClass}`}
           onDoubleClick={handleWrapperDoubleClick}
         >
+          {/* Tool dock — anchored to the canvas (not the outer row) so it sits
+              just inside the canvas edge and slides over as the rail opens. */}
+          <Dock activeTool={tool} onToolChange={handleToolChange} viewMode={viewMode} onToggleView={handleToggleView} onClear={() => setShowClear(true)} clearDisabled={graph.nodes.length === 0} relLabelMode={relLabelMode} onRelLabelModeChange={handleRelLabelModeChange} />
           <ReactFlow
             nodes={rfNodes}
             edges={rfEdges}

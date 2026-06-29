@@ -24,6 +24,21 @@ export function buildApp() {
   // inline style attributes; without it the canvas breaks. worker-src allows
   // blob: because PostHog session replay runs its recorder in a web worker.
   const POSTHOG_PROXY = "https://mrph.owox.com";
+
+  // Supabase ("sign up to save"): the browser talks to ONE project's Auth + REST
+  // API directly. Pin connect-src to that exact project origin — deliberately NOT
+  // a `*.supabase.co` wildcard — so an injected script can't exfiltrate the OWOX
+  // key / Supabase session to an attacker-controlled Supabase project. Read from
+  // the same env that configures the web build; unset → omitted (feature off, so
+  // the CSP stays as tight as possible). wss covers the (currently unused)
+  // realtime channel on that same origin.
+  const supabaseOrigin = (() => {
+    try { return new URL(process.env.VITE_SUPABASE_URL ?? "").origin; } catch { return null; }
+  })();
+  const supabaseConnect = supabaseOrigin
+    ? [supabaseOrigin, supabaseOrigin.replace(/^https:/, "wss:")]
+    : [];
+
   app.register(helmet, {
     contentSecurityPolicy: {
       directives: {
@@ -33,10 +48,7 @@ export function buildApp() {
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:"],
         fontSrc: ["'self'", "data:"],
-        // Supabase ("sign up to save"): the browser talks to the project's Auth +
-        // REST API directly. Wildcard covers any project (dev/prod) without baking
-        // the ref into the CSP; wss for the (currently unused) realtime channel.
-        connectSrc: ["'self'", POSTHOG_PROXY, "https://*.supabase.co", "wss://*.supabase.co"],
+        connectSrc: ["'self'", POSTHOG_PROXY, ...supabaseConnect],
         workerSrc: ["'self'", "blob:"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
