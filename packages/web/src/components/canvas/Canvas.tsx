@@ -25,6 +25,7 @@ import { X, Sparkles, MessageSquare } from "lucide-react";
 import { createModelStore } from "../../state/model";
 import { loadPersistedGraph, persistGraph } from "../../state/persist";
 import { loadViewMode, persistViewMode, type ViewMode } from "../../state/viewMode";
+import { loadRelLabelMode, persistRelLabelMode, type RelLabelMode } from "../../state/relLabels";
 import type { ModelNode, ModelEdge, ModelGraph } from "@mc/okf";
 
 import { graphToBundleFiles, downloadBundle } from "../../okf/io";
@@ -184,6 +185,11 @@ function CanvasInner() {
   }, []);
   const [tool, setTool] = useState<Tool>("select");
   const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode());
+  const [relLabelMode, setRelLabelMode] = useState<RelLabelMode>(loadRelLabelMode());
+  const handleRelLabelModeChange = useCallback((mode: RelLabelMode) => {
+    setRelLabelMode(mode);
+    persistRelLabelMode(mode);
+  }, []);
   const [showImport, setShowImport] = useState(false);
   const [showOwoxImport, setShowOwoxImport] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -240,7 +246,7 @@ function CanvasInner() {
     const kf = keyFieldsByNode(graph.edges);
     setRfNodes(graph.nodes.map(n => toRFNode(n, viewMode, [...(kf.get(n.key) ?? [])])));
   }, [graph.nodes, graph.edges, viewMode, setRfNodes]);
-  useEffect(() => { setRfEdges(buildRfEdges(graph.edges, graph.nodes, viewMode)); }, [graph.edges, graph.nodes, viewMode, setRfEdges]);
+  useEffect(() => { setRfEdges(buildRfEdges(graph.edges, graph.nodes, viewMode, relLabelMode)); }, [graph.edges, graph.nodes, viewMode, relLabelMode, setRfEdges]);
 
   // Mark only the selected relationship as reconnectable so dragging an endpoint
   // moves the line the user picked (not whichever overlapping edge RF would grab),
@@ -653,7 +659,7 @@ function CanvasInner() {
 
       <div className="flex flex-1 min-h-0 relative">
         {/* Left tool dock */}
-        <Dock activeTool={tool} onToolChange={handleToolChange} viewMode={viewMode} onToggleView={handleToggleView} onClear={() => setShowClear(true)} clearDisabled={graph.nodes.length === 0} />
+        <Dock activeTool={tool} onToolChange={handleToolChange} viewMode={viewMode} onToggleView={handleToggleView} onClear={() => setShowClear(true)} clearDisabled={graph.nodes.length === 0} relLabelMode={relLabelMode} onRelLabelModeChange={handleRelLabelModeChange} />
 
         {/* React Flow canvas */}
         <div
