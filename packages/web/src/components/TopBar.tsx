@@ -39,6 +39,9 @@ export interface TopBarProps {
   saving?: boolean;
   onMyModels?: () => void;
   onAccountSignOut?: () => void;
+  // Opens the Enable (signed-out) or Account (signed-in) Sheet panel.
+  // Added in Task 3; top-bar cleanup in Task 7.
+  onEnable?: () => void;
 }
 
 const LOGO = (
@@ -72,6 +75,7 @@ export function TopBar({
   onOpenGoal, goalSet = false, questionsEnabled = false,
   modelName, onRenameModel,
   supabaseEnabled = false, accountEmail, onSave, saving = false, onMyModels, onAccountSignOut,
+  onEnable,
 }: TopBarProps) {
   // Push split-button menu (holds the signed-in "Import from OWOX project" action).
   const [menuOpen, setMenuOpen] = useState(false);
@@ -266,12 +270,22 @@ export function TopBar({
           >
             <Save size={15} /> {saving ? "Saving…" : "Save"}
           </button>
-          {accountEmail && (
+          {/* Enable control — opens the Enable (signed-out) or Account (signed-in)
+              Sheet panel. Replaces the per-auth dropdown in Task 7. */}
+          {!accountEmail ? (
+            <button
+              onClick={onEnable}
+              title="Enable saves and version history"
+              className="text-[13px] font-[550] border border-[#1e88e5] bg-[#e6f1fb] text-[#1e88e5] rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#d0e8fa]"
+            >
+              Enable
+            </button>
+          ) : (
             <div className="relative">
               <button
-                onClick={() => setAcctOpen(o => !o)}
-                aria-haspopup="menu"
-                aria-expanded={acctOpen}
+                onClick={() => onEnable ? onEnable() : setAcctOpen(o => !o)}
+                aria-haspopup={onEnable ? undefined : "menu"}
+                aria-expanded={onEnable ? undefined : acctOpen}
                 title={accountEmail}
                 className="flex items-center gap-[6px] rounded-lg border border-[#d8dee8] bg-white px-[8px] py-[5px] cursor-pointer hover:bg-[#f1f3f7]"
               >
@@ -280,7 +294,7 @@ export function TopBar({
                 </span>
                 <ChevronDown size={14} className="text-slate-400" />
               </button>
-              {acctOpen && (
+              {!onEnable && acctOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setAcctOpen(false)} />
                   <div role="menu" className="absolute top-[calc(100%+6px)] right-0 z-50 w-[232px] rounded-lg border border-[#d8dee8] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.18)] py-1">

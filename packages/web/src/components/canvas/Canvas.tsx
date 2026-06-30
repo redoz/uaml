@@ -65,7 +65,9 @@ import { erdAwareNodeSize } from "./layoutSize";
 import { Inspector } from "../inspector/Inspector";
 import { RightRail } from "../rail/RightRail";
 import { ModelSheet } from "../rail/ModelSheet";
-import { useRightPanel } from "../rail/useRightPanel";
+import { useRightPanel, type RightPanelId } from "../rail/useRightPanel";
+import { EnablePanel } from "../rail/EnablePanel";
+import { AccountPanel } from "../rail/AccountPanel";
 import { GoalDialog } from "../GoalDialog";
 import { loadGoal, persistGoal, type BusinessGoal } from "../../state/goal";
 
@@ -230,7 +232,7 @@ function CanvasInner() {
   const [showNewModel, setShowNewModel] = useState(false);
   const { me, connect, signOut } = useAuth();
   // Supabase account ("Save your model") — independent of the OWOX connect above.
-  const { user: account, signOut: accountSignOut } = useAccount();
+  const { user: account, signOut: accountSignOut, signInWithGoogle, signInWithGitHub, signInWithEmail } = useAccount();
   const [showAccount, setShowAccount] = useState(false);
   const [showMyModels, setShowMyModels] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -577,6 +579,23 @@ function CanvasInner() {
     else setShowNewModel(true);
   }, [clearCanvas, savedModelId, savedSnapshot]);
 
+  // Open the Enable panel (signed-out auth) or Account panel (signed-in) — the
+  // single "Enable" top-bar control toggles between them based on sign-in state.
+  const handleEnable = useCallback(() => {
+    panel.open(account ? "account" : "enable");
+  }, [account, panel]);
+
+  // Rail open with gating: models/history require a Supabase account; redirect to
+  // the Enable panel when signed out so the user can create one. The clicked icon's
+  // visual intent is preserved by routing through the same panel.open path.
+  const handleRailOpen = useCallback((id: RightPanelId) => {
+    if ((id === "models" || id === "history") && !account) {
+      panel.open("enable");
+    } else {
+      panel.open(id);
+    }
+  }, [account, panel]);
+
   // Confirmed start-new: wipe to a fresh model (clearCanvas resets id + name).
   const startNewModel = useCallback(() => { clearCanvas(); setShowNewModel(false); }, [clearCanvas]);
   const exportAndStartNewModel = useCallback(() => { handleExport(); startNewModel(); }, [handleExport, startNewModel]);
@@ -690,6 +709,7 @@ function CanvasInner() {
         saving={saving}
         onMyModels={() => setShowMyModels(true)}
         onAccountSignOut={() => { void accountSignOut(); setSavedModelId(null); }}
+        onEnable={handleEnable}
       />
       {showAccount && <AccountDialog onClose={() => setShowAccount(false)} />}
       {showMyModels && <MyModelsDialog onOpen={handleOpenSaved} onClose={() => setShowMyModels(false)} />}
@@ -896,9 +916,23 @@ function CanvasInner() {
               embedded
             />
           )}
-          {/* models / history / share panels added in Tasks 3–6 */}
+          {panel.active === "enable" && (
+            <EnablePanel
+              onGoogle={() => void signInWithGoogle()}
+              onGitHub={() => void signInWithGitHub()}
+              onEmail={(email) => void signInWithEmail(email)}
+            />
+          )}
+          {panel.active === "account" && account && (
+            <AccountPanel
+              email={account.email ?? ""}
+              onMyModels={() => { setShowMyModels(true); panel.close(); }}
+              onSignOut={() => { void accountSignOut(); setSavedModelId(null); panel.close(); }}
+            />
+          )}
+          {/* share / models / history panels added in Tasks 4–6 */}
         </ModelSheet>
-        <RightRail active={panel.active} onOpen={panel.open} signedIn={!!account} />
+        <RightRail active={panel.active} onOpen={handleRailOpen} signedIn={!!account} />
       </div>
     </div>
   );
