@@ -42,8 +42,6 @@ import { useAccount } from "../../lib/account";
 import { supabaseEnabled } from "../../lib/supabase";
 import { isAuthRedirecting } from "../../lib/authRedirect";
 import { createModel, updateModel, createVersion, listModels, loadModel, deleteModel, listVersions, loadVersion, type SavedModel, type ModelVersion } from "../../lib/models";
-import { AccountDialog } from "../AccountDialog";
-import { MyModelsDialog } from "../MyModelsDialog";
 import { TopBar, type StorageOption } from "../TopBar";
 import { ImportDialog } from "../ImportDialog";
 import { OwoxImportDialog } from "../OwoxImportDialog";
@@ -248,8 +246,6 @@ function CanvasInner() {
       listModels().then(setSavedModels).catch(() => {});
     }
   }, [panel.active, account]);
-  const [showAccount, setShowAccount] = useState(false);
-  const [showMyModels, setShowMyModels] = useState(false);
   const [saving, setSaving] = useState(false);
   // The id of the saved model currently open (so Save updates it instead of
   // creating a duplicate). Reset on Clear / opening a different model.
@@ -554,7 +550,7 @@ function CanvasInner() {
   // sign-in dialog instead (the user clicks Save again after returning). On an
   // already-saved model, update it in place; otherwise create a new row.
   const handleSave = useCallback(async () => {
-    if (!account) { setShowAccount(true); return; }
+    if (!account) { panel.open("enable"); return; }
     setSaving(true);
     try {
       const graph = store.get();
@@ -786,20 +782,13 @@ function CanvasInner() {
         questionsEnabled={questionsEnabled}
         signedIn={!!me}
         projectTitle={me?.projectTitle}
-        onSignIn={() => setSignIn({ mode: "connect" })}
-        onSignOut={handleSignOut}
         modelName={modelName}
-        onRenameModel={setModelName}
         supabaseEnabled={supabaseEnabled}
         accountEmail={account?.email ?? null}
         onSave={handleSave}
         saving={saving}
-        onMyModels={() => setShowMyModels(true)}
-        onAccountSignOut={() => { void accountSignOut(); setSavedModelId(null); }}
         onEnable={handleEnable}
       />
-      {showAccount && <AccountDialog onClose={() => setShowAccount(false)} />}
-      {showMyModels && <MyModelsDialog onOpen={handleOpenSaved} onClose={() => setShowMyModels(false)} />}
       {shareToast && <ShareToast message={shareToast} onClose={() => setShareToast(null)} />}
       {pushing && (
         <div className="fixed bottom-4 right-4 z-50 bg-slate-900 text-white text-[13px] px-4 py-2 rounded-lg shadow-lg">

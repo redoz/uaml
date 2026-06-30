@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Download, Upload, ChevronDown, Target, Share2, FileText, Image as ImageIcon, Save, FolderOpen, LogOut } from "lucide-react";
+import { Download, Upload, ChevronDown, Target, Share2, FileText, Image as ImageIcon, Save } from "lucide-react";
 import { ProjectIcon, StorageIcon, LibraryIcon } from "../lib/icons";
+import { EnableControl } from "./EnableControl";
 
 // First-visit onboarding hint pointing at the Library. Persisted so it only
 // ever shows once per browser; dismissed as soon as the user hovers it.
@@ -24,23 +25,17 @@ export interface TopBarProps {
   onLibrary?: () => void;
   signedIn: boolean;
   projectTitle?: string;
-  onSignIn?: () => void;
-  onSignOut?: () => void;
   onOpenGoal?: () => void;
   goalSet?: boolean;
   questionsEnabled?: boolean;
-  // Editable model name, shown next to the brand and used as the Save default.
+  // Model name — passed to EnableControl as subtext when signed in.
   modelName?: string;
-  onRenameModel?: (name: string) => void;
   // Supabase account ("Save"). Independent of the OWOX connect/sign-in above.
   supabaseEnabled?: boolean;
   accountEmail?: string | null;
   onSave?: () => void;
   saving?: boolean;
-  onMyModels?: () => void;
-  onAccountSignOut?: () => void;
   // Opens the Enable (signed-out) or Account (signed-in) Sheet panel.
-  // Added in Task 3; top-bar cleanup in Task 7.
   onEnable?: () => void;
 }
 
@@ -71,26 +66,14 @@ export function TopBar({
   pendingCount = 0, storages = [], storageId, onStorageChange,
   onImport, onImportFromOwox, onExport, onExportSvg, exportDisabled = false,
   onShare, shareDisabled = false, onPush, onLibrary,
-  signedIn, projectTitle, onSignIn, onSignOut,
+  signedIn, projectTitle,
   onOpenGoal, goalSet = false, questionsEnabled = false,
-  modelName, onRenameModel,
-  supabaseEnabled = false, accountEmail, onSave, saving = false, onMyModels, onAccountSignOut,
+  modelName,
+  supabaseEnabled = false, accountEmail, onSave, saving = false,
   onEnable,
 }: TopBarProps) {
   // Push split-button menu (holds the signed-in "Import from OWOX project" action).
   const [menuOpen, setMenuOpen] = useState(false);
-  // Supabase account dropdown.
-  const [acctOpen, setAcctOpen] = useState(false);
-  // Inline model-name editing.
-  const [editingName, setEditingName] = useState(false);
-  const [draftName, setDraftName] = useState(modelName ?? "");
-  useEffect(() => { setDraftName(modelName ?? ""); }, [modelName]);
-  const commitName = () => {
-    setEditingName(false);
-    const n = draftName.trim();
-    if (n && n !== modelName) onRenameModel?.(n);
-    else setDraftName(modelName ?? "");
-  };
   // Export dropdown (OKF markdown / PNG / SVG).
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   // Show the Library hint on first ever visit; stays lit until hovered.
@@ -119,34 +102,6 @@ export function TopBar({
         </a>
         <span>Model Canvas</span>
       </div>
-
-      {/* Editable model name — click to rename. Used as the Save default. */}
-      {modelName != null && (
-        <>
-          <span className="select-none text-slate-300">/</span>
-          {editingName ? (
-            <input
-              autoFocus
-              value={draftName}
-              onChange={e => setDraftName(e.target.value)}
-              onBlur={commitName}
-              onKeyDown={e => {
-                if (e.key === "Enter") commitName();
-                if (e.key === "Escape") { setDraftName(modelName); setEditingName(false); }
-              }}
-              className="w-[260px] rounded-md border border-[#1e88e5] px-2 py-[3px] text-[13px] font-[550] text-slate-900 outline-none"
-            />
-          ) : (
-            <button
-              onClick={() => setEditingName(true)}
-              title="Rename model"
-              className="max-w-[280px] cursor-text truncate rounded-md px-2 py-[3px] text-[13px] font-[550] text-slate-700 hover:bg-[#f1f3f7]"
-            >
-              {modelName}
-            </button>
-          )}
-        </>
-      )}
 
       {/* Business Goal — entry point for Insight Questions. Hidden unless the
           server reports GEMINI_API_KEY is set (questionsEnabled), so it's a pure
@@ -257,60 +212,18 @@ export function TopBar({
         <Share2 size={15} /> Share
       </button>
 
-      {/* Save to your account (Supabase). Anonymous-first: clicking while signed
-          out opens the sign-in dialog; create/edit/export never need an account.
-          Hidden entirely when Supabase isn't configured (env kill-switch). */}
+      {/* Save to your account (Supabase). Clicking while signed out opens the
+          Enable panel (handled in Canvas.tsx handleSave). Hidden when Supabase
+          isn't configured (env kill-switch). */}
       {supabaseEnabled && (
-        <>
-          <button
-            onClick={onSave}
-            disabled={saving}
-            title={accountEmail ? "Save this model to your account" : "Sign in to save this model"}
-            className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save size={15} /> {saving ? "Saving…" : "Save"}
-          </button>
-          {/* Enable control — opens the Enable (signed-out) or Account (signed-in)
-              Sheet panel. Replaces the per-auth dropdown in Task 7. */}
-          {!accountEmail ? (
-            <button
-              onClick={onEnable}
-              title="Enable saves and version history"
-              className="text-[13px] font-[550] border border-[#1e88e5] bg-[#e6f1fb] text-[#1e88e5] rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#d0e8fa]"
-            >
-              Enable
-            </button>
-          ) : (
-            <div className="relative">
-              <button
-                onClick={() => onEnable ? onEnable() : setAcctOpen(o => !o)}
-                aria-haspopup={onEnable ? undefined : "menu"}
-                aria-expanded={onEnable ? undefined : acctOpen}
-                title={accountEmail}
-                className="flex items-center gap-[6px] rounded-lg border border-[#d8dee8] bg-white px-[8px] py-[5px] cursor-pointer hover:bg-[#f1f3f7]"
-              >
-                <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#1e88e5] text-[12px] font-semibold text-white">
-                  {accountEmail.trim().charAt(0).toUpperCase()}
-                </span>
-                <ChevronDown size={14} className="text-slate-400" />
-              </button>
-              {!onEnable && acctOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setAcctOpen(false)} />
-                  <div role="menu" className="absolute top-[calc(100%+6px)] right-0 z-50 w-[232px] rounded-lg border border-[#d8dee8] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.18)] py-1">
-                    <div className="truncate px-3 py-2 text-[12px] text-slate-400 border-b border-[#eef1f5]">{accountEmail}</div>
-                    <button role="menuitem" onClick={() => { setAcctOpen(false); onMyModels?.(); }} className="w-full text-left text-[13px] text-slate-900 px-3 py-2 cursor-pointer flex items-center gap-[8px] hover:bg-[#f1f3f7]">
-                      <FolderOpen size={15} className="text-slate-500" /> My models
-                    </button>
-                    <button role="menuitem" onClick={() => { setAcctOpen(false); onAccountSignOut?.(); }} className="w-full text-left text-[13px] text-slate-900 px-3 py-2 cursor-pointer flex items-center gap-[8px] hover:bg-[#f1f3f7]">
-                      <LogOut size={15} className="text-slate-500" /> Sign out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </>
+        <button
+          onClick={onSave}
+          disabled={saving}
+          title={accountEmail ? "Save this model to your account" : "Sign in to save this model"}
+          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Save size={15} /> {saving ? "Saving…" : "Save"}
+        </button>
       )}
 
       {/* Push to OWOX — split button: primary push + caret menu (signed-in only)
@@ -354,20 +267,15 @@ export function TopBar({
         )}
       </div>
 
-      {signedIn ? (
-        <button
-          onClick={onSignOut}
-          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer hover:bg-[#f1f3f7]"
-        >
-          Sign out
-        </button>
-      ) : (
-        <button
-          onClick={onSignIn}
-          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer hover:bg-[#f1f3f7]"
-        >
-          Sign in
-        </button>
+      {/* Enable control — opens the Enable (signed-out) or Account (signed-in)
+          Sheet panel. Replaces the old OWOX sign-in button and account chip.
+          Shown only when Supabase is configured. */}
+      {supabaseEnabled && (
+        <EnableControl
+          signedIn={!!accountEmail}
+          modelName={modelName}
+          onClick={onEnable ?? (() => {})}
+        />
       )}
     </div>
   );
