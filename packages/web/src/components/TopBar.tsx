@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Download, Upload, ChevronDown, Target, Share2, FileText, Image as ImageIcon } from "lucide-react";
+import { Download, Upload, ChevronDown, Target, FileText, Image as ImageIcon } from "lucide-react";
 import { ProjectIcon, StorageIcon, LibraryIcon } from "../lib/icons";
+import { EnableControl } from "./EnableControl";
 
 // First-visit onboarding hint pointing at the Library. Persisted so it only
 // ever shows once per browser; dismissed as soon as the user hovers it.
@@ -24,11 +25,20 @@ export interface TopBarProps {
   onLibrary?: () => void;
   signedIn: boolean;
   projectTitle?: string;
-  onSignIn?: () => void;
-  onSignOut?: () => void;
   onOpenGoal?: () => void;
   goalSet?: boolean;
   questionsEnabled?: boolean;
+  // Model name — passed to EnableControl as subtext when signed in.
+  modelName?: string;
+  // Supabase account ("Save"). Independent of the OWOX connect/sign-in above.
+  supabaseEnabled?: boolean;
+  accountEmail?: string | null;
+  onSave?: () => void;
+  saving?: boolean;
+  // Save state caption under the Save button: "saved" | "unsaved" | null (hidden).
+  saveState?: "saved" | "unsaved" | null;
+  // Opens the Enable (signed-out) or Account (signed-in) Sheet panel.
+  onEnable?: () => void;
 }
 
 const LOGO = (
@@ -57,9 +67,12 @@ const LOGO = (
 export function TopBar({
   pendingCount = 0, storages = [], storageId, onStorageChange,
   onImport, onImportFromOwox, onExport, onExportSvg, exportDisabled = false,
-  onShare, shareDisabled = false, onPush, onLibrary,
-  signedIn, projectTitle, onSignIn, onSignOut,
+  onPush, onLibrary,
+  signedIn, projectTitle,
   onOpenGoal, goalSet = false, questionsEnabled = false,
+  modelName,
+  supabaseEnabled = false, accountEmail,
+  onEnable,
 }: TopBarProps) {
   // Push split-button menu (holds the signed-in "Import from OWOX project" action).
   const [menuOpen, setMenuOpen] = useState(false);
@@ -191,15 +204,7 @@ export function TopBar({
         )}
       </div>
 
-      {/* Share — copy a link that reopens this exact model (no sign-in needed) */}
-      <button
-        onClick={onShare}
-        disabled={shareDisabled}
-        title={shareDisabled ? "Add a mart first, then share" : "Copy a shareable link to this model"}
-        className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer flex items-center gap-[6px] hover:bg-[#f1f3f7] disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <Share2 size={15} /> Share
-      </button>
+      {/* Share and Save both live in the right rail now — no top-bar buttons. */}
 
       {/* Push to OWOX — split button: primary push + caret menu (signed-in only)
           holding the less-common "Import from OWOX project" action. */}
@@ -242,20 +247,15 @@ export function TopBar({
         )}
       </div>
 
-      {signedIn ? (
-        <button
-          onClick={onSignOut}
-          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer hover:bg-[#f1f3f7]"
-        >
-          Sign out
-        </button>
-      ) : (
-        <button
-          onClick={onSignIn}
-          className="text-[13px] font-[550] border border-[#d8dee8] bg-white text-slate-900 rounded-lg px-3 py-[7px] cursor-pointer hover:bg-[#f1f3f7]"
-        >
-          Sign in
-        </button>
+      {/* Enable control — opens the Enable (signed-out) or Account (signed-in)
+          Sheet panel. Replaces the old OWOX sign-in button and account chip.
+          Shown only when Supabase is configured. */}
+      {supabaseEnabled && (
+        <EnableControl
+          signedIn={!!accountEmail}
+          modelName={modelName}
+          onClick={onEnable ?? (() => {})}
+        />
       )}
     </div>
   );
