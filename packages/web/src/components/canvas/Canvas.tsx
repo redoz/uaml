@@ -70,6 +70,7 @@ import { EnablePanel } from "../rail/EnablePanel";
 import { AccountPanel } from "../rail/AccountPanel";
 import { MyModelsPanel } from "../rail/MyModelsPanel";
 import { HistoryPanel } from "../rail/HistoryPanel";
+import { SharePanel } from "../rail/SharePanel";
 import { DiffDialog } from "../DiffDialog";
 import { GoalDialog } from "../GoalDialog";
 import { loadGoal, persistGoal, type BusinessGoal } from "../../state/goal";
@@ -1040,6 +1041,13 @@ function CanvasInner() {
               onCompare={id => void handleCompare(id)}
               onRestore={id => void handleRestoreById(id)}
               signedIn={!!account}
+            />
+          )}
+          {panel.active === "share" && (
+            <SharePanel
+              shareUrl={buildShareUrl(store.get(), modelName)}
+              onCopy={() => void handleShare()}
+              onExportImage={handleExportSvg}
             />
           )}
         </ModelSheet>
