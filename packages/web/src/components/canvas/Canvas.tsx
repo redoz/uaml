@@ -240,6 +240,13 @@ function CanvasInner() {
   const { user: account, signOut: accountSignOut, signInWithGoogle, signInWithGitHub, signInWithEmail } = useAccount();
   // Clear the gated highlight once the user signs in so the stale icon doesn't persist.
   useEffect(() => { if (account) setVisualRailId(null); }, [account]);
+  // Close gated panels if the account disappears (sign-out, session expiry) so
+  // the user isn't left staring at an authenticated-only panel with no content.
+  useEffect(() => {
+    if (!account && (panel.active === "models" || panel.active === "history" || panel.active === "account")) {
+      panel.close();
+    }
+  }, [account, panel.active]); // eslint-disable-line react-hooks/exhaustive-deps
   // Load the saved models list whenever the My Models panel becomes active.
   useEffect(() => {
     if (panel.active === "models" && account) {
@@ -979,6 +986,7 @@ function CanvasInner() {
         {/* Right region: a unified Sheet hosting the active panel + the always-on icon rail */}
         <ModelSheet
           active={panel.active}
+          modal={panel.active !== "inspect"}
           title={SHEET_TITLES[panel.active ?? "inspect"]}
           onClose={() => { const wasInspect = panel.active === "inspect"; panel.close(); if (wasInspect) setSelection(null); setVisualRailId(null); }}
         >
