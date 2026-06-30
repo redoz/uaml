@@ -38,17 +38,36 @@ describe("RightRail", () => {
       expect(screen.getByRole("button", { name: l }).getAttribute("aria-current")).toBeNull());
   });
 
-  it("renders a Save action that fires onSave", () => {
+  it("highlights the active rail panel even when a stale highlightId points elsewhere", () => {
+    // Opening My Models from the Account panel sets active="models" while a prior
+    // rail click may have left highlightId="inspect" — active must win.
+    render(<RightRail active="models" onOpen={() => {}} signedIn highlightId="inspect" />);
+    expect(screen.getByRole("button", { name: "My Models" }).getAttribute("aria-current")).toBe("true");
+    expect(screen.getByRole("button", { name: "Inspect" }).getAttribute("aria-current")).toBeNull();
+  });
+
+  it("fires onSave only when there are unsaved changes (amber)", () => {
     const onSave = vi.fn();
-    render(<RightRail active={null} onOpen={() => {}} signedIn onSave={onSave} saveState="saved" />);
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    render(<RightRail active={null} onOpen={() => {}} signedIn onSave={onSave} saveState="unsaved" />);
+    const btn = screen.getByRole("button", { name: "Save" });
+    expect(btn.className).toMatch(/text-amber-600/);
+    expect((btn as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(btn);
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
-  it("tints Save amber and disables it while saving", () => {
-    const { rerender } = render(<RightRail active={null} onOpen={() => {}} signedIn onSave={() => {}} saveState="unsaved" />);
-    expect(screen.getByRole("button", { name: "Save" }).className).toMatch(/text-amber-600/);
-    rerender(<RightRail active={null} onOpen={() => {}} signedIn onSave={() => {}} saving saveState="unsaved" />);
+  it("disables Save with an explanatory tooltip when there's nothing to save", () => {
+    const onSave = vi.fn();
+    render(<RightRail active={null} onOpen={() => {}} signedIn onSave={onSave} saveState="saved" />);
+    const btn = screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    expect(btn.title).toMatch(/nothing to save/i);
+    fireEvent.click(btn);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("disables Save while a save is in flight", () => {
+    render(<RightRail active={null} onOpen={() => {}} signedIn onSave={() => {}} saving saveState="unsaved" />);
     expect((screen.getByRole("button", { name: "Save" }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

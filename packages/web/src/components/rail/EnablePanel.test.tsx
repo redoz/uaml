@@ -19,7 +19,7 @@ describe("EnablePanel", () => {
     const onEmail = vi.fn();
     render(<EnablePanel onGoogle={()=>{}} onGitHub={()=>{}} onEmail={onEmail} />);
     fireEvent.change(screen.getByPlaceholderText("you@company.com"), { target: { value: "a@b.co" } });
-    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send link/i }));
     expect(onEmail).toHaveBeenCalledWith("a@b.co");
   });
 });

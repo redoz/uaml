@@ -38,8 +38,14 @@ export function RightRail({ active, onOpen, signedIn, highlightId, onSave, savin
   onSave?: () => void; saving?: boolean; saveState?: "saved" | "unsaved" | null;
 }) {
   void signedIn; // reserved for sign-in-gated affordances in later tasks
+  // Highlight follows the active panel whenever it's a rail panel (so My Models
+  // opened from the Account panel lights its icon too). highlightId is only the
+  // fallback for the gated case, where active routes to "enable"/"account".
+  const RAIL_IDS = ["inspect", "models", "share", "history"];
+  const highlight: RightPanelId | null =
+    active && RAIL_IDS.includes(active) ? active : (highlightId ?? null);
   const renderPanel = (it: Item) => {
-    const on = it.id === (highlightId ?? active);
+    const on = it.id === highlight;
     return (
       <button key={it.id} onClick={() => onOpen(it.id)} aria-current={on ? "true" : undefined} className={railBtn(on)}>
         {it.icon}{it.label}
@@ -47,18 +53,27 @@ export function RightRail({ active, onOpen, signedIn, highlightId, onSave, savin
     );
   };
   const unsaved = saveState === "unsaved";
+  // Save is only meaningful when there are unsaved changes — otherwise it's
+  // disabled so the user can't spam pointless version-history snapshots.
+  const canSave = !!onSave && unsaved && !saving;
+  const saveTitle = saving
+    ? "Saving…"
+    : unsaved
+      ? "Unsaved changes — click to save"
+      : "Nothing to save — make some changes in the model";
   return (
     <nav className="w-[60px] flex-shrink-0 border-l border-[#d8dee8] bg-[#fafafa] flex flex-col items-center gap-1 py-[14px] px-[4px] z-20">
       {TOP_ITEMS.map(renderPanel)}
 
-      {/* Save — an action (not a panel). Orange when there are unsaved changes. */}
+      {/* Save — an action (not a panel). Orange when there are unsaved changes;
+          disabled (with an explanatory tooltip) when there's nothing to save. */}
       <button
         onClick={onSave}
-        disabled={saving}
+        disabled={!canSave}
         aria-label="Save"
-        title={unsaved ? "Unsaved changes — click to save" : "Save"}
-        className={`relative w-full flex flex-col items-center gap-1 py-[9px] px-1 rounded-lg text-[11px] font-medium border border-transparent disabled:opacity-60 ${
-          unsaved ? "text-amber-600 hover:bg-amber-50" : "text-slate-500 hover:bg-[#f1f3f7] hover:text-slate-900"}`}
+        title={saveTitle}
+        className={`relative w-full flex flex-col items-center gap-1 py-[9px] px-1 rounded-lg text-[11px] font-medium border border-transparent disabled:cursor-not-allowed ${
+          unsaved ? "text-amber-600 hover:bg-amber-50" : "text-slate-400"}`}
       >
         {unsaved && <span className="absolute top-[6px] right-[10px] h-[7px] w-[7px] rounded-full bg-amber-500" />}
         <Save size={20} />{saving ? "Saving…" : "Save"}

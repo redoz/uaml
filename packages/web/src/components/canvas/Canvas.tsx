@@ -197,7 +197,7 @@ function CanvasInner() {
   // that a gated redirect (models/history → "enable") still lights the clicked icon.
   const [visualRailId, setVisualRailId] = useState<RightPanelId | null>(null);
   // Selecting a node/edge auto-opens the Inspect panel — preserves current UX.
-  useEffect(() => { if (selection) { panel.open("inspect"); setVisualRailId("inspect"); } }, [selection]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (selection) { panel.open("inspect"); setVisualRailId(null); } }, [selection]); // eslint-disable-line react-hooks/exhaustive-deps
   const [goal, setGoalState] = useState<BusinessGoal | null>(loadGoal());
   const [showGoal, setShowGoal] = useState(false);
   // Niche guessed from the last template loaded — pre-fills the Business Goal
@@ -671,15 +671,18 @@ function CanvasInner() {
   // Open the Enable panel (signed-out auth) or Account panel (signed-in) — the
   // single "Enable" top-bar control toggles between them based on sign-in state.
   const handleEnable = useCallback(() => {
+    setVisualRailId(null); // Account/Enable aren't rail panels — clear any prior rail highlight.
     panel.open(account ? "account" : "enable");
   }, [account, panel]);
 
   // Rail open with gating: models/history require a Supabase account; redirect to
-  // the Enable panel when signed out so the user can create one. The clicked icon
-  // stays highlighted via visualRailId regardless of where panel.active routes to.
+  // the Enable panel when signed out so the user can create one. visualRailId is
+  // ONLY needed for that gated case (active routes to "enable" but we still want
+  // the clicked icon lit). For normal opens the highlight follows panel.active.
   const handleRailOpen = useCallback((id: RightPanelId) => {
-    setVisualRailId(id);
-    panel.open(gatedPanelId(id, !!account));
+    const target = gatedPanelId(id, !!account);
+    setVisualRailId(target === id ? null : id);
+    panel.open(target);
   }, [account, panel]);
 
   // Confirmed start-new: wipe to a fresh model (clearCanvas resets id + name).

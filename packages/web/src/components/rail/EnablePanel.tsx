@@ -113,7 +113,7 @@ export function EnablePanel({
           onClick={() => { if (email.trim()) onEmail(email.trim()); }}
           className="rounded-lg bg-[#1e88e5] px-4 py-2.5 text-[14px] font-[550] text-white hover:bg-[#1976d2] cursor-pointer"
         >
-          Send magic link
+          Send link
         </button>
       </div>
 
