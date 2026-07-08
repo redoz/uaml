@@ -20,6 +20,7 @@ import { b2b_sales } from "./b2b-sales";
 import { customer_support } from "./customer-support";
 import { hr_people } from "./hr-people";
 import { telecom } from "./telecom";
+import { hospitality } from "./hospitality";
 import { crypto_bitcoin } from "./bitcoin";
 import { stackoverflow } from "./stackoverflow";
 
@@ -38,6 +39,7 @@ export const TEMPLATES: Template[] = [
   customer_support,
   hr_people,
   telecom,
+  hospitality,
   crypto_bitcoin,
   stackoverflow,
 ];
