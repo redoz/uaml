@@ -4,6 +4,13 @@ import { f, mart, rel, type Template } from "./helpers";
 // E-commerce / Retail — Kimball-style sales star. fct_order_items is the lowest
 // grain (order × SKU) where true line margin lives; fct_orders keeps the header
 // totals; sessions and returns hang off the same conformed customer/product dims.
+//
+// Goal coverage (niche "ecommerce"):
+//   ROAS/CPC                → fct_ad_spend (cost, clicks) × dim_campaign × fct_orders revenue
+//   contribution margin     → fct_order_items.line_margin + fct_orders.shipping_cost − fct_returns
+//   repeat rate & LTV       → dim_customer (rfm_segment, lifetime_*) + fct_orders.is_first_order
+//   returns on high-AOV     → fct_returns × dim_product.category × fct_orders.gross_revenue
+//   cart/checkout abandon   → fct_sessions (add_to_cart, reached_checkout, converted)
 const graph: ModelGraph = {
   storageId: null,
   nodes: [
@@ -30,6 +37,23 @@ const graph: ModelGraph = {
       f("list_price", "NUMERIC", false, "Standard catalog selling price before discounts."),
       f("is_active", "BOOLEAN", false, "Whether the SKU is currently available for sale."),
     ], "One row per sellable SKU with the category hierarchy and unit cost."),
+    mart("dim_campaign", "Campaign", "TABLE", [
+      f("campaign_id", "STRING", true, "Unique identifier for the marketing campaign."),
+      f("campaign_name", "STRING", false, "Human-readable name of the campaign."),
+      f("channel", "STRING", false, "Paid channel the campaign runs on (e.g. paid search, social, email)."),
+      f("utm_source", "STRING", false, "UTM source tag identifying where the traffic originates."),
+      f("utm_medium", "STRING", false, "UTM medium tag describing the traffic type (e.g. cpc, email)."),
+      f("start_date", "DATE", false, "Date the campaign went live."),
+    ], "Reference of marketing campaigns with channel and UTM tags — joins spend to sessions."),
+    mart("fct_ad_spend", "Ad Spend", "CONNECTOR", [
+      f("spend_id", "STRING", true, "Unique identifier for each spend record."),
+      f("spend_date", "DATE", false, "Day the spend was incurred."),
+      f("campaign_id", "STRING", false, "Campaign this spend belongs to."),
+      f("channel", "STRING", false, "Paid channel where the cost was spent."),
+      f("impressions", "INTEGER", false, "Number of times ads were shown."),
+      f("clicks", "INTEGER", false, "Number of clicks the ads received — CPC denominator."),
+      f("cost", "NUMERIC", false, "Money spent on the campaign for the day — ROAS denominator."),
+    ], "One row per campaign × day of ad spend. The cost side of ROAS and CPC."),
     mart("fct_orders", "Orders", "VIEW", [
       f("order_id", "STRING", true, "Unique identifier for the order."),
       f("customer_id", "STRING", false, "Buyer."),
@@ -40,6 +64,7 @@ const graph: ModelGraph = {
       f("gross_revenue", "NUMERIC", false, "Order value before discounts, shipping and tax."),
       f("discount_amount", "NUMERIC", false, "Total discounts applied to the order."),
       f("shipping_fee", "NUMERIC", false, "Shipping charged to the customer."),
+      f("shipping_cost", "NUMERIC", false, "What shipping actually cost us — contribution margin needs it, unlike the fee charged."),
       f("tax_amount", "NUMERIC", false, "Tax collected on the order."),
       f("net_revenue", "NUMERIC", false, "Gross − discount + shipping − tax."),
       f("is_first_order", "BOOLEAN", false, "Drives new-vs-returning revenue splits."),
@@ -61,7 +86,7 @@ const graph: ModelGraph = {
       f("started_at", "TIMESTAMP", false, "Moment the session began."),
       f("source", "STRING", false, "Traffic source that referred the session."),
       f("medium", "STRING", false, "Marketing medium (e.g. organic, cpc, email)."),
-      f("campaign", "STRING", false, "Campaign that drove the session."),
+      f("campaign_id", "STRING", false, "Campaign that drove the session — joins to ad spend for ROAS."),
       f("device", "STRING", false, "Device type used (e.g. mobile, desktop, tablet)."),
       f("landing_page", "STRING", false, "First page viewed in the session."),
       f("pageviews", "INTEGER", false, "Count of pages viewed during the session."),
@@ -86,6 +111,8 @@ const graph: ModelGraph = {
     rel("e4", "fct_sessions", "dim_customer", "customer_id", "customer_id"),
     rel("e5", "fct_returns", "fct_order_items", "order_item_id", "order_item_id"),
     rel("e6", "fct_returns", "dim_product", "product_id", "product_id"),
+    rel("e7", "fct_ad_spend", "dim_campaign", "campaign_id", "campaign_id"),
+    rel("e8", "fct_sessions", "dim_campaign", "campaign_id", "campaign_id"),
   ],
 };
 
@@ -94,6 +121,6 @@ export const ecommerce: Template = {
   nicheId: "ecommerce",
   category: "industry",
   name: "E-commerce / Retail",
-  description: "Sales star schema: order & line-item margin, web sessions and returns over conformed customer/product dimensions.",
+  description: "Sales star schema: ad spend & ROAS, order & line-item margin, web sessions and returns over conformed customer/product/campaign dimensions.",
   graph,
 };
