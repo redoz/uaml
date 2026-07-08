@@ -14,6 +14,7 @@ import { mobile_gaming } from "./mobile-gaming";
 import { finance } from "./finance";
 import { medical } from "./medical";
 import { ott_media } from "./ott-media";
+import { delivery_logistics } from "./delivery-logistics";
 import { crypto_bitcoin } from "./bitcoin";
 import { stackoverflow } from "./stackoverflow";
 
@@ -26,6 +27,7 @@ export const TEMPLATES: Template[] = [
   finance,
   medical,
   ott_media,
+  delivery_logistics,
   crypto_bitcoin,
   stackoverflow,
 ];
