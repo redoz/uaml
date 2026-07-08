@@ -9,7 +9,7 @@ export interface NichePreset {
   goals: string[];
 }
 
-// Ten verticals with five sharp, metric-driven goals each. These feed the AI
+// Twenty verticals with five sharp, metric-driven goals each. These feed the AI
 // "Insight Questions" — phrased as the levers a senior analyst would actually
 // chase (named KPIs, cohorts and funnel stages), not generic aspirations.
 export const NICHE_PRESETS: NichePreset[] = [
@@ -121,6 +121,116 @@ export const NICHE_PRESETS: NichePreset[] = [
       "Raise policy renewal / retention rate",
       "Lift quote-to-bind (hit) ratio profitably",
       "Cut claims cycle time & claims leakage",
+    ],
+  },
+  {
+    id: "b2b_sales",
+    label: "B2B Sales / RevOps",
+    goals: [
+      "Raise win rate on qualified pipeline without discount erosion",
+      "Shorten sales-cycle length by de-bottlenecking pipeline stages",
+      "Improve forecast accuracy & cut quarter-end slippage",
+      "Lift rep quota attainment and shorten ramp time",
+      "Grow average deal size (ACV) via multi-product deals",
+    ],
+  },
+  {
+    id: "customer_support",
+    label: "Customer Support / Service",
+    goals: [
+      "Hit first-response & resolution SLA across channels",
+      "Raise CSAT and cut negative-response rate",
+      "Cut average handle time (AHT) without hurting quality",
+      "Lift first-contact resolution & reduce reopens",
+      "Balance agent staffing to ticket volume by hour & channel",
+    ],
+  },
+  {
+    id: "hr_people",
+    label: "HR / People Analytics",
+    goals: [
+      "Cut time-to-fill and cost-per-hire for key roles",
+      "Raise offer-acceptance rate by source & segment",
+      "Lower first-year regrettable attrition",
+      "Close pay-equity gaps across levels & functions",
+      "Lift engagement (eNPS) and link it to attrition risk",
+    ],
+  },
+  {
+    id: "telecom",
+    label: "Telecom / ISP",
+    goals: [
+      "Cut monthly churn in high-value subscriber segments",
+      "Grow ARPU via plan upgrades & add-on attach",
+      "Reduce churn driven by network incidents (QoS)",
+      "Improve collections & cut involuntary disconnects",
+      "Raise 5G/fiber migration rate profitably",
+    ],
+  },
+  {
+    id: "hospitality",
+    label: "Hotels / Hospitality",
+    goals: [
+      "Lift RevPAR without sacrificing occupancy",
+      "Shift OTA bookings to direct to cut commission cost",
+      "Cut cancellation & no-show revenue loss",
+      "Grow ancillary revenue per occupied room",
+      "Optimise rate-plan & channel mix by season and segment",
+    ],
+  },
+  {
+    id: "restaurants",
+    label: "Restaurants / QSR",
+    goals: [
+      "Grow same-store sales & average check",
+      "Cut food-cost % via menu engineering",
+      "Keep labor cost % on target against hourly sales",
+      "Reduce aggregator commission drag with first-party orders",
+      "Cut waste & shrink on high-cost ingredients",
+    ],
+  },
+  {
+    id: "edtech",
+    label: "EdTech / E-learning",
+    goals: [
+      "Raise course completion & lesson-level progression",
+      "Lift free-to-paid conversion on learner cohorts",
+      "Cut subscriber churn in the first 30 days",
+      "Improve assessment pass rate (learning outcomes)",
+      "Grow engaged learning time per active learner",
+    ],
+  },
+  {
+    id: "travel_ota",
+    label: "Travel / OTA",
+    goals: [
+      "Raise look-to-book conversion across devices",
+      "Grow ancillary attach (bags, seats, insurance) per booking",
+      "Cut cancellation & rebooking cost",
+      "Improve take-rate & margin mix across suppliers",
+      "Lift repeat-booking rate & app share of bookings",
+    ],
+  },
+  {
+    id: "retail_pos",
+    label: "Retail Chain / POS & Inventory",
+    goals: [
+      "Grow same-store sales & basket size",
+      "Cut stockouts on top-velocity SKUs",
+      "Raise inventory turns & cut weeks-of-supply on slow movers",
+      "Measure true promo uplift & kill margin-eroding promos",
+      "Reduce shrinkage hot spots by store & category",
+    ],
+  },
+  {
+    id: "manufacturing",
+    label: "Manufacturing / Supply Chain",
+    goals: [
+      "Raise OEE (availability × performance × quality) per line",
+      "Cut unplanned downtime on bottleneck machines",
+      "Lower defect & scrap rate per product and shift",
+      "Improve supplier OTIF and inbound quality",
+      "Hit production-plan attainment without overtime creep",
     ],
   },
 ];

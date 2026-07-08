@@ -4,8 +4,8 @@ import { NICHE_PRESETS, loadGoal, persistGoal } from "./goal";
 beforeEach(() => localStorage.clear());
 
 describe("goal state", () => {
-  it("ships 10 niches, each with 5 goals and a unique id", () => {
-    expect(NICHE_PRESETS).toHaveLength(10);
+  it("ships 20 niches, each with 5 goals and a unique id", () => {
+    expect(NICHE_PRESETS).toHaveLength(20);
     const ids = new Set<string>();
     for (const n of NICHE_PRESETS) {
       expect(n.id).toBeTruthy();
