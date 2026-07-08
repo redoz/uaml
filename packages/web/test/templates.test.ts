@@ -8,6 +8,7 @@ const EXPECTED_INDUSTRY_IDS = [
   "ecommerce", "saas", "marketplace", "marketing_ads", "mobile_gaming", "finance", "medical",
   "ott_media", "delivery_logistics", "insurance", "b2b_sales", "customer_support",
   "hr_people", "telecom", "hospitality", "restaurants", "edtech", "travel_ota",
+  "retail_pos",
 ];
 const EXPECTED_DATASET_IDS = ["crypto_bitcoin", "stackoverflow"];
 

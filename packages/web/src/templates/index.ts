@@ -24,6 +24,7 @@ import { hospitality } from "./hospitality";
 import { restaurants } from "./restaurants";
 import { edtech } from "./edtech";
 import { travel_ota } from "./travel-ota";
+import { retail_pos } from "./retail-pos";
 import { crypto_bitcoin } from "./bitcoin";
 import { stackoverflow } from "./stackoverflow";
 
@@ -46,6 +47,7 @@ export const TEMPLATES: Template[] = [
   restaurants,
   edtech,
   travel_ota,
+  retail_pos,
   crypto_bitcoin,
   stackoverflow,
 ];
