@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { GoalDialog } from "./GoalDialog";
 
 describe("GoalDialog", () => {
-  it("shows the privacy disclaimer up front", () => {
+  it("explains what the goal is for up front", () => {
     render(<GoalDialog current={null} onConfirm={() => {}} onClear={() => {}} onClose={() => {}} />);
-    expect(screen.getByText(/processed by Google Gemini/i)).toBeTruthy();
+    expect(screen.getByText(/business objective behind this model/i)).toBeTruthy();
   });
 
   it("walks niche → goal and confirms the selection", () => {

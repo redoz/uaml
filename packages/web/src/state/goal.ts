@@ -9,9 +9,9 @@ export interface NichePreset {
   goals: string[];
 }
 
-// Twenty verticals with five sharp, metric-driven goals each. These feed the AI
-// "Insight Questions" — phrased as the levers a senior analyst would actually
-// chase (named KPIs, cohorts and funnel stages), not generic aspirations.
+// Twenty verticals with five sharp, metric-driven goals each — phrased as the
+// levers a senior analyst would actually chase (named KPIs, cohorts and funnel
+// stages), not generic aspirations. Used to seed the Business Goal picker.
 export const NICHE_PRESETS: NichePreset[] = [
   {
     id: "ecommerce",

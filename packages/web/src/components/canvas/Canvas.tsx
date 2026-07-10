@@ -20,7 +20,7 @@ import "@xyflow/react/dist/style.css";
 import "./canvas.css";
 
 import dagre from "@dagrejs/dagre";
-import { X, Sparkles, MessageSquare } from "lucide-react";
+import { X, MessageSquare } from "lucide-react";
 
 import { createModelStore } from "../../state/model";
 import { loadPersistedGraph, persistGraph } from "../../state/persist";
@@ -112,18 +112,6 @@ if (sharedGraph) clearSharedModelFromUrl();
 // "start" chooser: shown once for new visitors, never over an opened model.
 const isFirstVisit = !templateInitial && !sharedGraph && persistedGraph === undefined;
 
-// Map a loaded template (by its display name) to the closest Insight-Questions
-// niche, so opening the Business Goal dialog after a template can pre-pick it.
-const TEMPLATE_NICHE: Record<string, string> = {
-  "E-commerce / Retail": "E-commerce / Retail",
-  "SaaS / Subscription": "SaaS / Subscription",
-  "Marketplace": "Marketplace / Platform",
-  "Marketing / Lead-gen": "B2B Marketing / Lead-gen",
-  "Mobile / Gaming": "Mobile App / Gaming",
-  "Finance / Fintech": "Fintech / Lending",
-  "Healthcare": "Healthcare Provider",
-};
-
 // ── helpers to convert between model and RF types ───────────────────────────
 function toRFNode(n: ModelNode, viewMode: ViewMode, keyFields?: string[]): Node {
   return {
@@ -198,20 +186,10 @@ function CanvasInner() {
   const [visualRailId, setVisualRailId] = useState<RightPanelId | null>(null);
   // Selecting a node/edge auto-opens the Inspect panel — preserves current UX.
   useEffect(() => { if (selection) { panel.open("inspect"); setVisualRailId(null); } }, [selection]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Business goal — a stored objective ({niche, goal}) persisted in localStorage.
+  // Standalone: captured via the Business Goal dialog and shown on the TopBar.
   const [goal, setGoalState] = useState<BusinessGoal | null>(loadGoal());
   const [showGoal, setShowGoal] = useState(false);
-  // Niche guessed from the last template loaded — pre-fills the Business Goal
-  // dialog. And a session flag so the Insight-Questions hero prompt is dismissable.
-  const [suggestedNiche, setSuggestedNiche] = useState<string | null>(null);
-  const [heroDismissed, setHeroDismissed] = useState(false);
-  // Server tells us whether the Insight Questions feature is on (GEMINI_API_KEY
-  // set). Gates the Business Goal button so the feature is a pure env switch.
-  const [questionsEnabled, setQuestionsEnabled] = useState(false);
-  useEffect(() => {
-    api<{ questionsEnabled: boolean }>("/api/config")
-      .then(c => setQuestionsEnabled(!!c.questionsEnabled))
-      .catch(() => setQuestionsEnabled(false));
-  }, []);
   const [tool, setTool] = useState<Tool>("select");
   const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode());
   const [relLabelMode, setRelLabelMode] = useState<RelLabelMode>(loadRelLabelMode());
@@ -690,8 +668,6 @@ function CanvasInner() {
   const exportAndStartNewModel = useCallback(() => { handleExport(); startNewModel(); }, [handleExport, startNewModel]);
 
   const handleUseTemplate = useCallback((g: ModelGraph, name: string) => {
-    // Remember the matching niche so the Business Goal dialog can pre-pick it.
-    if (TEMPLATE_NICHE[name]) setSuggestedNiche(TEMPLATE_NICHE[name]);
     // Empty canvas → drop the template straight in. Non-empty → ask Replace vs
     // Merge first (mirrors the OKF/OWOX import dialogs) so existing work isn't
     // silently wiped.
@@ -794,7 +770,6 @@ function CanvasInner() {
         onLibrary={() => setShowLibrary(true)}
         onOpenGoal={() => setShowGoal(true)}
         goalSet={!!goal}
-        questionsEnabled={questionsEnabled}
         signedIn={!!me}
         projectTitle={me?.projectTitle}
         modelName={modelName}
@@ -875,7 +850,6 @@ function CanvasInner() {
       {showGoal && (
         <GoalDialog
           current={goal}
-          suggestedNiche={suggestedNiche}
           onConfirm={g => { setGoalState(g); persistGoal(g); }}
           onClear={() => { setGoalState(null); persistGoal(null); setShowGoal(false); }}
           onClose={() => setShowGoal(false)}
@@ -973,24 +947,6 @@ function CanvasInner() {
               </div>
             </div>
           )}
-
-          {/* Insight Questions hero — surfaces the AI feature once a model exists.
-              Shown only while AI is available and no goal is set yet; dismissable. */}
-          {questionsEnabled && graph.nodes.length > 0 && !goal && !heroDismissed && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[5] flex items-center gap-3 rounded-xl border border-[#d8dee8] bg-white px-4 py-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)]">
-              <Sparkles size={16} className="flex-shrink-0 text-[#1e88e5]" />
-              <span className="text-[13px] text-slate-700">See the business questions this model can answer</span>
-              <button
-                onClick={() => { setHeroDismissed(true); setShowGoal(true); }}
-                className="rounded-lg bg-[#1e88e5] px-3 py-[6px] text-[13px] font-[600] text-white hover:bg-[#1976d2]"
-              >
-                Show me
-              </button>
-              <button onClick={() => setHeroDismissed(true)} aria-label="Dismiss" className="text-slate-400 hover:text-slate-700">
-                <X size={15} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Right region: a unified Sheet hosting the active panel + the always-on icon rail */}
@@ -1008,9 +964,6 @@ function CanvasInner() {
               onUpdateNode={store.updateNode}
               onUpdateEdge={store.updateEdge}
               onClose={() => { setSelection(null); panel.close(); }}
-              goal={goal}
-              questionsEnabled={questionsEnabled}
-              onEditGoal={() => setShowGoal(true)}
               embedded
             />
           )}

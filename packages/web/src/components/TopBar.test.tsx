@@ -55,13 +55,8 @@ describe("TopBar", () => {
 
   it("renders a Business Goal button and fires onOpenGoal", () => {
     const onOpenGoal = vi.fn();
-    render(<TopBar signedIn={false} onOpenGoal={onOpenGoal} questionsEnabled />);
+    render(<TopBar signedIn={false} onOpenGoal={onOpenGoal} />);
     fireEvent.click(screen.getByRole("button", { name: /business goal/i }));
     expect(onOpenGoal).toHaveBeenCalled();
-  });
-
-  it("hides the Business Goal button when the AI key is not configured", () => {
-    render(<TopBar signedIn={false} onOpenGoal={() => {}} questionsEnabled={false} />);
-    expect(screen.queryByRole("button", { name: /business goal/i })).toBeNull();
   });
 });

@@ -27,7 +27,6 @@ export interface TopBarProps {
   projectTitle?: string;
   onOpenGoal?: () => void;
   goalSet?: boolean;
-  questionsEnabled?: boolean;
   // Model name — passed to EnableControl as subtext when signed in.
   modelName?: string;
   // Supabase account ("Save"). Independent of the OWOX connect/sign-in above.
@@ -69,7 +68,7 @@ export function TopBar({
   onImport, onImportFromOwox, onExport, onExportSvg, exportDisabled = false,
   onPush, onLibrary,
   signedIn, projectTitle,
-  onOpenGoal, goalSet = false, questionsEnabled = false,
+  onOpenGoal, goalSet = false,
   modelName,
   supabaseEnabled = false, accountEmail,
   onEnable,
@@ -105,20 +104,16 @@ export function TopBar({
         <span>Model Canvas</span>
       </div>
 
-      {/* Business Goal — entry point for Insight Questions. Hidden unless the
-          server reports GEMINI_API_KEY is set (questionsEnabled), so it's a pure
-          env switch: drop the key and the whole AI feature disappears, no
-          redeploy of code needed. */}
-      {questionsEnabled && (
-        <button
-          onClick={onOpenGoal}
-          aria-label="Business goal — see the questions your model unlocks"
-          title="Set a business goal to see the questions your model unlocks"
-          className={`flex items-center gap-[6px] rounded-lg px-[10px] py-[6px] text-[13px] font-[550] cursor-pointer transition-colors ${goalSet ? "text-[#1e88e5] bg-[#e6f1fb]" : "text-slate-500 hover:bg-[#f1f3f7] hover:text-slate-900"}`}
-        >
-          <Target size={16} /> {goalSet ? "Business goal" : "Set business goal"}
-        </button>
-      )}
+      {/* Business Goal — capture the objective behind the model. Stored locally
+          alongside the model; a standalone entry point (no server dependency). */}
+      <button
+        onClick={onOpenGoal}
+        aria-label="Business goal"
+        title="Set the business goal behind this model"
+        className={`flex items-center gap-[6px] rounded-lg px-[10px] py-[6px] text-[13px] font-[550] cursor-pointer transition-colors ${goalSet ? "text-[#1e88e5] bg-[#e6f1fb]" : "text-slate-500 hover:bg-[#f1f3f7] hover:text-slate-900"}`}
+      >
+        <Target size={16} /> {goalSet ? "Business goal" : "Set business goal"}
+      </button>
 
       {/* Project picker chip */}
       {signedIn && (

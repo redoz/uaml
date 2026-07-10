@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { TEMPLATES, INDUSTRY_TEMPLATES, DATASET_TEMPLATES } from "../src/templates";
-import { NICHE_PRESETS } from "../src/state/goal";
 import { serializeBundle, parseBundle } from "@mc/okf";
 
 // Grows as template tasks land; the assertion pins the full expected library.
@@ -15,15 +14,6 @@ const EXPECTED_DATASET_IDS = ["crypto_bitcoin", "stackoverflow"];
 it("ships the expected library", () => {
   expect(INDUSTRY_TEMPLATES.map(t => t.id).sort()).toEqual([...EXPECTED_INDUSTRY_IDS].sort());
   expect(DATASET_TEMPLATES.map(t => t.id).sort()).toEqual([...EXPECTED_DATASET_IDS].sort());
-});
-
-it("industry templates map 1:1 onto niche presets", () => {
-  const nicheIds = new Set(NICHE_PRESETS.map(n => n.id));
-  for (const t of INDUSTRY_TEMPLATES) {
-    expect(nicheIds.has(t.nicheId!), `${t.id} → niche "${t.nicheId}" exists`).toBe(true);
-  }
-  const used = INDUSTRY_TEMPLATES.map(t => t.nicheId);
-  expect(new Set(used).size, "one template per niche").toBe(used.length);
 });
 
 for (const t of TEMPLATES) {

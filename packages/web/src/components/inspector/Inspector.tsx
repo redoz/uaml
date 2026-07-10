@@ -3,8 +3,6 @@ import { PanelRightOpen } from "lucide-react";
 import type { ModelNode, ModelEdge } from "@mc/okf";
 import { ObjectInspector } from "./ObjectInspector";
 import { RelationshipInspector } from "./RelationshipInspector";
-import { QuestionsPanel } from "./QuestionsPanel";
-import type { BusinessGoal } from "../../state/goal";
 import { joinFieldType } from "../../sync/joinFieldType";
 
 type Selection =
@@ -19,13 +17,10 @@ interface InspectorProps {
   onUpdateNode: (key: string, patch: Partial<ModelNode>) => void;
   onUpdateEdge: (id: string, patch: Partial<ModelEdge>) => void;
   onClose: () => void;
-  goal?: BusinessGoal | null;
-  questionsEnabled?: boolean;
-  onEditGoal?: () => void;
   /**
    * When true, render ONLY the selection body (ObjectInspector / RelationshipInspector /
-   * QuestionsPanel / EmptyState) — no outer drawer wrapper, border, width, resize handle,
-   * header, or ReopenTab. Used when the Inspector is hosted inside the right ModelSheet.
+   * EmptyState) — no outer drawer wrapper, border, width, resize handle, header, or
+   * ReopenTab. Used when the Inspector is hosted inside the right ModelSheet.
    * Default false preserves the standalone drawer behaviour byte-for-byte.
    */
   embedded?: boolean;
@@ -72,7 +67,7 @@ function ReopenTab({ onClick }: { onClick: () => void }) {
 }
 
 export function Inspector({
-  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose, goal, questionsEnabled, onEditGoal, embedded = false,
+  selection, nodes, edges, onUpdateNode, onUpdateEdge, onClose, embedded = false,
 }: InspectorProps) {
   const [open, setOpen] = useState(true);
   const [width, setWidth] = useState(320);
@@ -130,21 +125,10 @@ export function Inspector({
   // Selection body — shared between the standalone drawer and the embedded
   // (Sheet-hosted) render so editing behaviour is identical in both.
   const body = selectedNode ? (
-    <>
-      <ObjectInspector
-        node={selectedNode}
-        onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
-      />
-      {questionsEnabled && (
-        <QuestionsPanel
-          node={selectedNode}
-          nodes={nodes}
-          edges={edges}
-          goal={goal ?? null}
-          onEditGoal={onEditGoal ?? (() => {})}
-        />
-      )}
-    </>
+    <ObjectInspector
+      node={selectedNode}
+      onUpdate={patch => onUpdateNode(selectedNode.key, patch)}
+    />
   ) : selectedEdge ? (
     <RelationshipInspector
       edge={selectedEdge}

@@ -3,25 +3,18 @@ import { CheckCircle2 } from "lucide-react";
 import { NICHE_PRESETS, type BusinessGoal, type NichePreset } from "../state/goal";
 
 const DISCLAIMER =
-  "Allows you to see potential questions you may answer with these data marts and relationships. " +
-  "Mart titles, descriptions and field names are processed by Google Gemini to generate the questions; " +
-  "your row-level data is never sent.";
+  "Capture the business objective behind this model — the niche you operate in and the " +
+  "goal you're optimising for. It's saved locally in your browser alongside the model.";
 
 interface GoalDialogProps {
   current: BusinessGoal | null;
-  /** Pre-select this niche when there's no saved goal yet (e.g. from the
-   *  template the user just loaded), so they only need to pick a goal. */
-  suggestedNiche?: string | null;
   onConfirm: (g: BusinessGoal) => void;
   onClear: () => void;
   onClose: () => void;
 }
 
-export function GoalDialog({ current, suggestedNiche, onConfirm, onClear, onClose }: GoalDialogProps) {
-  const initialNiche =
-    NICHE_PRESETS.find(n => n.label === current?.niche)
-    ?? NICHE_PRESETS.find(n => n.label === suggestedNiche)
-    ?? null;
+export function GoalDialog({ current, onConfirm, onClear, onClose }: GoalDialogProps) {
+  const initialNiche = NICHE_PRESETS.find(n => n.label === current?.niche) ?? null;
   const [niche, setNiche] = useState<NichePreset | { label: string } | null>(
     initialNiche ?? (current ? { label: current.niche } : null),
   );
@@ -79,9 +72,8 @@ export function GoalDialog({ current, suggestedNiche, onConfirm, onClear, onClos
           >
             <CheckCircle2 size={16} className="text-[#059669] mt-[1px] flex-shrink-0" />
             <div className="text-[12px] leading-[1.5] text-[#065f46]">
-              <strong className="font-semibold">Goal applied.</strong> Select any data mart on the
-              canvas to see its <em className="not-italic font-medium">“Questions this unlocks”</em>{" "}
-              section and get question ideas.
+              <strong className="font-semibold">Goal applied.</strong> It's saved with your model in
+              this browser.
             </div>
           </div>
         )}
