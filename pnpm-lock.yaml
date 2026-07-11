@@ -39,6 +39,31 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.21)(jsdom@25.0.1)
 
+  packages/core:
+    dependencies:
+      '@dagrejs/dagre':
+        specifier: ^1.1.0
+        version: 1.1.8
+      '@mc/okf':
+        specifier: workspace:*
+        version: link:../okf
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
+      html-to-image:
+        specifier: ^1.11.13
+        version: 1.11.13
+    devDependencies:
+      jsdom:
+        specifier: ^25.0.0
+        version: 25.0.1
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.21)(jsdom@25.0.1)
+
   packages/okf:
     devDependencies:
       typescript:
@@ -53,6 +78,9 @@ importers:
       '@dagrejs/dagre':
         specifier: ^1.1.0
         version: 1.1.8
+      '@mc/core':
+        specifier: workspace:*
+        version: link:../core
       '@mc/okf':
         specifier: workspace:*
         version: link:../okf

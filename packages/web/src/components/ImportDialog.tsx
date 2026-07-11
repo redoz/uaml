@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Copy, Check } from "lucide-react";
-import { filesToGraph, parsePastedMarkdown, zipToFiles } from "../okf/io";
+import { filesToGraph, parsePastedMarkdown, zipToFiles } from "@mc/core/okf/io";
 import type { ModelGraph } from "@mc/okf";
 
 interface ImportDialogProps {

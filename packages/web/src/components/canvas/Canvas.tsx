@@ -29,7 +29,7 @@ import { loadRelLabelMode, persistRelLabelMode, type RelLabelMode } from "../../
 import { loadModelName, persistModelName, DEFAULT_MODEL_NAME, templateModelName } from "../../state/modelName";
 import type { ModelNode, ModelEdge, ModelGraph } from "@mc/okf";
 
-import { graphToBundleFiles, downloadBundle } from "../../okf/io";
+import { graphToBundleFiles, downloadBundle } from "@mc/core/okf/io";
 import { buildShareUrl, readSharedModel, readSharedName, clearSharedModelFromUrl } from "../../share/url";
 import { readTemplateModel, clearTemplateFromUrl } from "../../lib/templateLink";
 import { exportCanvasSvg } from "../../share/exportImage";

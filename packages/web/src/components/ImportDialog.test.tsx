@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { strFromU8, unzipSync } from "fflate";
-import { bundleToZip, filesToGraph } from "../okf/io";
+import { bundleToZip, filesToGraph } from "@mc/core/okf/io";
 import { ImportDialog } from "./ImportDialog";
 
 const PASTE = `<!-- customers.md -->
