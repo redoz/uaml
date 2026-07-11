@@ -51,7 +51,7 @@ import { buildRfEdges, buildAnchorEdges, isEdgeReconnectable } from "./edges";
 import { erdAwareNodeSize } from "./layoutSize";
 import { Inspector } from "../inspector/Inspector";
 import { ExternalRefs } from "../inspector/ExternalRefs";
-import { getProfile } from "../../profiles";
+import { getProfile } from "@mc/core/profiles";
 import { RightRail } from "../rail/RightRail";
 import { ModelSheet } from "../rail/ModelSheet";
 import { useRightPanel } from "../rail/useRightPanel";

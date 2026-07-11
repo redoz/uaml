@@ -1,7 +1,7 @@
 import type { ModelNode, Attribute } from "@mc/okf";
 import { AttributeEditor } from "./AttributeEditor";
 import { InfoTip } from "./InfoTip";
-import { getProfile } from "../../profiles";
+import { getProfile } from "@mc/core/profiles";
 
 interface ObjectInspectorProps {
   node: ModelNode;
