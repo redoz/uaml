@@ -22,7 +22,7 @@ A vendor-neutral way to describe a data model as a folder of Markdown files with
 ## Links
 - App: https://model.owox.com/
 - Build a model with AI (guide): https://model.owox.com/ai-instructions.html
-- OKF format spec for AI agents: https://model.owox.com/okf-format.md
+- OKF format spec for AI agents (UML-flavored classifier + diagram markdown format): https://model.owox.com/okf-format.md
 - OWOX Data Marts (the self-service analytics platform behind it): https://www.owox.com/
 - OWOX/models (example OKF bundles): https://github.com/OWOX/models
 - Get started free: https://www.owox.com/app-signup

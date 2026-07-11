@@ -104,7 +104,7 @@ tags: ["owox", "view"]
 - [Products](./products.md) — \`product_id = id\` [N:1]
 `;
 
-describe("okf authoring guide — worked example imports", () => {
+describe("legacy mart format still imports", () => {
   const graph = filesToGraph({ "pasted.md": GUIDE_EXAMPLE });
 
   it("parses 4 marts", () => {
@@ -124,5 +124,111 @@ describe("okf authoring guide — worked example imports", () => {
     const e = graph.edges.find(x => x.from === "order-items" && x.to === "orders")!;
     expect(e.fromEnd.multiplicity).toBe("*");
     expect(e.toEnd.multiplicity).toBe("1");
+  });
+});
+
+// The exact UML worked example from public/okf-format.md. It MUST stay
+// character-identical with the guide's fenced example — that's the drift guard
+// that keeps the documented format executable. If you edit one, edit both.
+const UML_GUIDE_EXAMPLE = `
+<!-- shop/order.md -->
+---
+type: uml.Class
+stereotype: [aggregateRoot, entity]
+title: Order
+description: "A customer's placed order."
+---
+# Order
+
+## Attributes
+- id: OrderId [1]
+- status: [OrderStatus](./order-status.md) [1]
+- total: [Money](./money.md) [1]
+
+## Relationships
+- associates [Customer](./customer.md): 1 order to 1 customer
+- composes [OrderLine](./order-line.md): 1 to 1..* lines
+
+<!-- shop/order-line.md -->
+---
+type: uml.Class
+stereotype: entity
+title: OrderLine
+---
+# OrderLine
+
+## Attributes
+- quantity: Int [1]
+- unitPrice: [Money](./money.md) [1]
+
+<!-- shop/customer.md -->
+---
+type: uml.Class
+stereotype: [aggregateRoot, entity]
+title: Customer
+---
+# Customer
+
+## Attributes
+- id: CustomerId [1]
+- name: String [1]
+
+<!-- shop/order-status.md -->
+---
+type: uml.Enum
+title: OrderStatus
+---
+# OrderStatus
+
+## Values
+- DRAFT
+- PLACED
+- SHIPPED
+- CANCELLED
+
+<!-- shop/money.md -->
+---
+type: uml.DataType
+stereotype: valueObject
+title: Money
+---
+# Money
+
+## Attributes
+- amount: Decimal [1]
+- currency: CurrencyCode [1]
+
+<!-- shop/orders-domain.md -->
+---
+type: Diagram
+title: Orders Domain
+profile: uml-domain
+---
+# Orders Domain
+
+## Members
+- [Order](./order.md)
+- [OrderLine](./order-line.md)
+- [Customer](./customer.md)
+- [OrderStatus](./order-status.md)
+- [Money](./money.md)
+`;
+
+describe("okf authoring guide — UML worked example imports", () => {
+  const graph = filesToGraph({ "pasted.md": UML_GUIDE_EXAMPLE });
+
+  it("parses 5 classifiers and 1 diagram", () => {
+    expect(graph.nodes.map(n => n.key).sort()).toEqual(["customer", "money", "order", "order-line", "order-status"]);
+    expect(graph.diagrams).toHaveLength(1);
+    expect(graph.diagrams[0].members).toHaveLength(5);
+  });
+  it("stereotypes, refs, enum values and kinds all land", () => {
+    const order = graph.nodes.find(n => n.key === "order")!;
+    expect(order.stereotypes).toEqual(["aggregateRoot", "entity"]);
+    expect(order.attributes.find(a => a.name === "total")!.type).toEqual({ name: "Money", ref: "money" });
+    expect(graph.nodes.find(n => n.key === "order-status")!.values).toEqual(["DRAFT", "PLACED", "SHIPPED", "CANCELLED"]);
+    expect(graph.edges.map(e => e.kind).sort()).toEqual(["associates", "composes"]);
+    const compose = graph.edges.find(e => e.kind === "composes")!;
+    expect(compose.toEnd).toMatchObject({ multiplicity: "1..*", role: "lines" });
   });
 });
