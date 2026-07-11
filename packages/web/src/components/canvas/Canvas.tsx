@@ -48,7 +48,7 @@ import { OkfNode } from "./nodes/OkfNode";
 import { RelEdge } from "./RelEdge";
 import { AnchorEdge } from "./AnchorEdge";
 import { buildRfEdges, buildAnchorEdges, isEdgeReconnectable } from "./edges";
-import { erdAwareNodeSize } from "./layoutSize";
+import { erdAwareNodeSize } from "@mc/core/canvas/layoutSize";
 import { Inspector } from "../inspector/Inspector";
 import { ExternalRefs } from "../inspector/ExternalRefs";
 import { getProfile } from "@mc/core/profiles";

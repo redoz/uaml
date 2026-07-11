@@ -2,7 +2,7 @@ import { Position, type Edge } from "@xyflow/react";
 import type { ModelNode, ModelEdge } from "@mc/okf";
 import type { ViewMode } from "@mc/core/state/viewMode";
 import type { RelLabelMode } from "@mc/core/state/relLabels";
-import { erdAwareNodeSize } from "./layoutSize";
+import { erdAwareNodeSize } from "@mc/core/canvas/layoutSize";
 import { oppositeSide, type Slot } from "./floating";
 
 // The rendered edge attaches nowhere fixed: RelEdge computes a floating attach
