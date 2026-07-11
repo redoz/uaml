@@ -10,53 +10,26 @@ const edge = (over: Partial<ModelEdge> = {}): ModelEdge =>
 const nodes = [node("a"), node("b", 600)];
 
 describe("buildRfEdges", () => {
-  it("compact: one edge per model edge using the stored handles", () => {
-    const out = buildRfEdges([edge({ sourceHandle: "right", targetHandle: "left" })], nodes, "compact");
+  it("compact: one edge per model edge (floating — no fixed handle set)", () => {
+    const out = buildRfEdges([edge()], nodes, "compact");
     expect(out).toHaveLength(1);
     expect(out[0].id).toBe("e1");
-    expect(out[0].sourceHandle).toBe("right");
-    expect(out[0].targetHandle).toBe("left");
+    expect(out[0].source).toBe("a");
+    expect(out[0].target).toBe("b");
+    // Floating edges derive their side at render time; no handle is pinned here.
+    expect(out[0].sourceHandle).toBeUndefined();
+    expect(out[0].targetHandle).toBeUndefined();
+    expect(out[0].type).toBe("rel");
     expect((out[0].data as { kind?: string }).kind).toBe("associates");
     expect((out[0].data as { modelEdgeId?: string }).modelEdgeId).toBe("e1");
   });
 
   it("erd: still one edge per model edge with associates kind + modelEdgeId", () => {
-    const out = buildRfEdges([edge({ sourceHandle: "right", targetHandle: "left" })], nodes, "erd");
+    const out = buildRfEdges([edge()], nodes, "erd");
     expect(out).toHaveLength(1);
     expect(out[0].id).toBe("e1");
     expect((out[0].data as { kind?: string }).kind).toBe("associates");
     expect((out[0].data as { modelEdgeId?: string }).modelEdgeId).toBe("e1");
-  });
-});
-
-describe("buildRfEdges geometry-derived sides (no stored handle)", () => {
-  const at = (key: string, x: number): ModelNode => node(key, x);
-  // Import/template edges carry no stored handle — the case that used to jump.
-  const bare = edge();
-
-  it("compact: target to the right → source exits right, target enters left", () => {
-    const out = buildRfEdges([bare], [at("a", 0), at("b", 600)], "compact");
-    expect(out[0].sourceHandle).toBe("right");
-    expect(out[0].targetHandle).toBe("left");
-  });
-
-  it("compact: target to the left → source exits left, target enters right", () => {
-    const out = buildRfEdges([bare], [at("a", 600), at("b", 0)], "compact");
-    expect(out[0].sourceHandle).toBe("left");
-    expect(out[0].targetHandle).toBe("right");
-  });
-
-  it("erd uses the SAME geometry side as compact (no jump on toggle)", () => {
-    const out = buildRfEdges([bare], [at("a", 600), at("b", 0)], "erd");
-    expect(out[0].sourceHandle).toBe("left");
-    expect(out[0].targetHandle).toBe("right");
-  });
-
-  it("an explicit stored handle still wins over geometry", () => {
-    const e = edge({ sourceHandle: "left", targetHandle: "right" });
-    const out = buildRfEdges([e], [at("a", 0), at("b", 600)], "compact");
-    expect(out[0].sourceHandle).toBe("left");
-    expect(out[0].targetHandle).toBe("right");
   });
 });
 

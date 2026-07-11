@@ -1,7 +1,8 @@
 import { memo } from "react";
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from "@xyflow/react";
+import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, useInternalNode, type EdgeProps } from "@xyflow/react";
 import type { ModelEdge, RelEnd, RelationshipKind } from "@mc/okf";
 import type { RelLabelMode } from "../../state/relLabels";
+import { getEdgeParams } from "./floating";
 
 export type RelEdgeData = Pick<ModelEdge, "kind" | "fromEnd" | "toEnd" | "bidirectional"> & {
   relLabelMode?: RelLabelMode;
@@ -12,14 +13,24 @@ export type RelEdgeData = Pick<ModelEdge, "kind" | "fromEnd" | "toEnd" | "bidire
 const DASHED: ReadonlySet<RelationshipKind> = new Set(["implements", "depends"]);
 
 function RelEdgeInner(props: EdgeProps) {
-  const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, selected } = props;
+  const { id, source, target, data, selected } = props;
+  const s = useInternalNode(source);
+  const t = useInternalNode(target);
   const d = data as unknown as RelEdgeData | undefined;
   const kind: RelationshipKind = d?.kind ?? "associates";
   const fromEnd: RelEnd = d?.fromEnd ?? {};
   const toEnd: RelEnd = d?.toEnd ?? {};
   const mode: RelLabelMode = d?.relLabelMode ?? "all";
 
-  const [edgePath] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+  if (!s || !t) return null;
+
+  // Floating endpoints: each end attaches to the border facing the other node.
+  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(s, t);
+  const [edgePath] = getSmoothStepPath({
+    sourceX: sx, sourceY: sy, sourcePosition: sourcePos,
+    targetX: tx, targetY: ty, targetPosition: targetPos,
+    borderRadius: 8,
+  });
   const stroke = selected ? "#1e88e5" : "#64748b";
   const strokeWidth = selected ? 2.5 : 1.8;
 
@@ -58,8 +69,8 @@ function RelEdgeInner(props: EdgeProps) {
   const labels: { x: number; y: number; text: string }[] = [];
   if (showLabels) {
     const ft = endText(fromEnd); const tt = endText(toEnd);
-    if (ft) labels.push({ x: lerp(sourceX, targetX, 0.18), y: lerp(sourceY, targetY, 0.18) - 10, text: ft });
-    if (tt) labels.push({ x: lerp(sourceX, targetX, 0.82), y: lerp(sourceY, targetY, 0.82) - 10, text: tt });
+    if (ft) labels.push({ x: lerp(sx, tx, 0.18), y: lerp(sy, ty, 0.18) - 10, text: ft });
+    if (tt) labels.push({ x: lerp(sx, tx, 0.82), y: lerp(sy, ty, 0.82) - 10, text: tt });
   }
 
   return (

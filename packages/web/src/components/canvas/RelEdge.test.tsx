@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { RelEdge } from "./RelEdge";
-import type { EdgeProps } from "@xyflow/react";
-import { Position } from "@xyflow/react";
+import type { EdgeProps, Node } from "@xyflow/react";
+import { Position, ReactFlowProvider } from "@xyflow/react";
 
 const base: EdgeProps = {
   id: "e1", source: "a", target: "b",
@@ -11,8 +11,19 @@ const base: EdgeProps = {
   selected: false,
 } as unknown as EdgeProps;
 
+// RelEdge now reads its endpoints via useInternalNode → the two nodes must exist
+// in a ReactFlow store, so tests render inside a provider seeded with them.
+const nodes: Node[] = [
+  { id: "a", position: { x: 0, y: 0 }, data: {}, width: 100, height: 100, measured: { width: 100, height: 100 } },
+  { id: "b", position: { x: 200, y: 0 }, data: {}, width: 100, height: 100, measured: { width: 100, height: 100 } },
+];
+
 const draw = (data: Record<string, unknown>) =>
-  render(<svg><RelEdge {...base} data={data} /></svg>);
+  render(
+    <ReactFlowProvider initialNodes={nodes}>
+      <svg><RelEdge {...base} data={data} /></svg>
+    </ReactFlowProvider>,
+  );
 
 describe("RelEdge UML adornments", () => {
   it("composes draws a filled diamond marker at the source", () => {
