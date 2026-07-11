@@ -6,6 +6,7 @@
 export type { Template } from "./helpers";
 
 import type { Template } from "./helpers";
+import { ordersDomain } from "./orders-domain";
 import { ecommerce } from "./ecommerce";
 import { saas } from "./saas";
 import { marketplace } from "./marketplace";
@@ -30,6 +31,7 @@ import { crypto_bitcoin } from "./bitcoin";
 import { stackoverflow } from "./stackoverflow";
 
 export const TEMPLATES: Template[] = [
+  ordersDomain,
   ecommerce,
   saas,
   marketplace,

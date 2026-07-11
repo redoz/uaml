@@ -9,7 +9,7 @@ const EXPECTED_INDUSTRY_IDS = [
   "hr_people", "telecom", "hospitality", "restaurants", "edtech", "travel_ota",
   "retail_pos", "manufacturing",
 ];
-const EXPECTED_DATASET_IDS = ["crypto_bitcoin", "stackoverflow"];
+const EXPECTED_DATASET_IDS = ["uml_orders_domain", "crypto_bitcoin", "stackoverflow"];
 
 it("ships the expected library", () => {
   expect(INDUSTRY_TEMPLATES.map(t => t.id).sort()).toEqual([...EXPECTED_INDUSTRY_IDS].sort());
@@ -17,6 +17,12 @@ it("ships the expected library", () => {
 });
 
 for (const t of TEMPLATES) {
+  // The mart-derived templates carry legacy invariants (every node is a fully
+  // described table with columns; every edge is a plain association). The UML
+  // showcase deliberately breaks these — it has enums/interfaces/value objects,
+  // composition and dependency — so those two invariants are mart-only.
+  const isLegacyMart = t.id !== "uml_orders_domain";
+
   describe(t.name, () => {
     const byKey = new Map(t.graph.nodes.map(n => [n.key, n]));
 
@@ -25,7 +31,7 @@ for (const t of TEMPLATES) {
       expect(new Set(t.graph.edges.map(e => e.id)).size).toBe(t.graph.edges.length);
     });
 
-    it("every node has fully described attributes", () => {
+    it.skipIf(!isLegacyMart)("every node has fully described attributes", () => {
       for (const n of t.graph.nodes) {
         expect(n.attributes.length, `${n.title} has attributes`).toBeGreaterThan(0);
         expect(n.description?.trim(), `${n.title} has a description`).toBeTruthy();
@@ -35,15 +41,20 @@ for (const t of TEMPLATES) {
       }
     });
 
-    it("every edge resolves and is an associates relationship", () => {
+    it("every edge resolves to real endpoints", () => {
       for (const e of t.graph.edges) {
         const from = byKey.get(e.from);
         const to = byKey.get(e.to);
         expect(from, `${e.id} from ${e.from}`).toBeTruthy();
         expect(to, `${e.id} to ${e.to}`).toBeTruthy();
-        expect(e.kind, `${e.id} kind`).toBe("associates");
         expect(e.fromEnd, `${e.id} has a fromEnd`).toBeTruthy();
         expect(e.toEnd, `${e.id} has a toEnd`).toBeTruthy();
+      }
+    });
+
+    it.skipIf(!isLegacyMart)("every edge is an associates relationship", () => {
+      for (const e of t.graph.edges) {
+        expect(e.kind, `${e.id} kind`).toBe("associates");
       }
     });
 

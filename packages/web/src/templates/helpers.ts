@@ -35,3 +35,46 @@ export interface Template {
   description: string;
   graph: ModelGraph;
 }
+
+// ── UML-profile authoring helpers (stage 6+) ───────────────────────────────
+export const attr = (
+  name: string,
+  type: string | { name: string; ref: string },
+  opts: { mult?: string; vis?: Attribute["visibility"]; desc?: string } = {},
+): Attribute => ({
+  name,
+  type: typeof type === "string" ? { name: type } : type,
+  multiplicity: opts.mult ?? "1",
+  ...(opts.vis ? { visibility: opts.vis } : {}),
+  ...(opts.desc ? { description: opts.desc } : {}),
+});
+
+export const cls = (
+  key: string,
+  title: string,
+  opts: { type?: string; stereotypes?: string[]; abstract?: boolean; description?: string; attributes?: Attribute[] } = {},
+): ModelNode => ({
+  key, title,
+  type: opts.type ?? "uml.Class",
+  stereotypes: opts.stereotypes ?? [],
+  ...(opts.abstract ? { abstract: true } : {}),
+  ...(opts.description ? { description: opts.description } : {}),
+  attributes: opts.attributes ?? [],
+  position: { x: 0, y: 0 },
+});
+
+export const enumOf = (key: string, title: string, values: string[], description?: string): ModelNode =>
+  ({ key, title, type: "uml.Enum", stereotypes: [], ...(description ? { description } : {}), attributes: [], values, position: { x: 0, y: 0 } });
+
+export const edge = (
+  id: string,
+  kind: ModelEdge["kind"],
+  from: string,
+  to: string,
+  fromEnd: ModelEdge["fromEnd"] = {},
+  toEnd: ModelEdge["toEnd"] = {},
+): ModelEdge => ({
+  id, kind, from, to, fromEnd,
+  toEnd: kind === "associates" ? { navigable: true, ...toEnd } : toEnd,
+  bidirectional: false,
+});
