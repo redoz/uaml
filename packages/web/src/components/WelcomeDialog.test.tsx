@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { WelcomeDialog } from "./WelcomeDialog";
-import { TEMPLATES } from "../templates";
+import { TEMPLATES } from "@mc/core/templates";
 
 describe("WelcomeDialog", () => {
   const props = () => ({ onUseTemplate: vi.fn(), onStartBlank: vi.fn(), onImport: vi.fn() });

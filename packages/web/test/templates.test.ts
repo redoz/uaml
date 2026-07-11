@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TEMPLATES, INDUSTRY_TEMPLATES, DATASET_TEMPLATES } from "../src/templates";
+import { TEMPLATES, INDUSTRY_TEMPLATES, DATASET_TEMPLATES } from "@mc/core/templates";
 import { serializeBundle, parseBundle } from "@mc/okf";
 
 // Grows as template tasks land; the assertion pins the full expected library.

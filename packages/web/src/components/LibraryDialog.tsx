@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, X, Rocket } from "lucide-react";
 import type { ModelGraph } from "@mc/okf";
-import { TEMPLATES, INDUSTRY_TEMPLATES, DATASET_TEMPLATES, type Template } from "../templates";
+import { TEMPLATES, INDUSTRY_TEMPLATES, DATASET_TEMPLATES, type Template } from "@mc/core/templates";
 import { DataMartIcon, JoinIcon, LibraryIcon } from "../lib/icons";
 
 interface Props {
