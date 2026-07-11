@@ -42,7 +42,7 @@ import { TemplateApplyDialog } from "../TemplateApplyDialog";
 import { WelcomeDialog } from "../WelcomeDialog";
 import { ClearCanvasDialog } from "../ClearCanvasDialog";
 import { Dock, type Tool } from "./Dock";
-import { MartNode } from "./MartNode";
+import { OkfNode } from "./nodes/OkfNode";
 import { RelEdge } from "./RelEdge";
 import { buildRfEdges, isEdgeReconnectable } from "./edges";
 import { erdAwareNodeSize } from "./layoutSize";
@@ -130,7 +130,7 @@ const SHEET_TITLES: Record<NonNullable<ReturnType<typeof useRightPanel>["active"
 };
 
 // ── Inner canvas (needs ReactFlowProvider context) ────────────────────────────
-const nodeTypes = { okf: MartNode };
+const nodeTypes = { okf: OkfNode };
 const edgeTypes = { rel: RelEdge };
 
 function CanvasInner() {
