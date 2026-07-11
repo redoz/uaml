@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import type { ModelNode, ModelEdge } from "@mc/okf";
+import { describe, it, test, expect } from "vitest";
+import type { ModelNode, ModelEdge } from "@uaml/okf";
+import { createModelStore } from "@uaml/core/state/model";
 import { buildRfEdges, isEdgeReconnectable, buildAnchorEdges } from "./edges";
 
 const node = (key: string, x = 0): ModelNode =>
@@ -126,5 +127,31 @@ describe("isEdgeReconnectable (only the selected relationship reconnects)", () =
   });
   it("is false when the edge has no modelEdgeId", () => {
     expect(isEdgeReconnectable(undefined, "e1")).toBe(false);
+  });
+});
+
+// Integration smoke tests against the real @uaml/core model store (rather than
+// hand-rolled fixtures), matching how buildRfEdges/buildAnchorEdges are actually
+// fed by the Svelte state bridge.
+describe("integration with @uaml/core's createModelStore", () => {
+  test("buildRfEdges maps each model edge to one 'rel' edge with modelEdgeId in data", () => {
+    const s = createModelStore();
+    const a = s.addNode({ x: 0, y: 0 });
+    const b = s.addNode({ x: 0, y: 0 });
+    const e = s.addEdge(a.key, b.key)!;
+    const { nodes: n, edges: ed } = s.get();
+    const rf = buildRfEdges(ed, n, "compact", "all", true);
+    expect(rf).toHaveLength(1);
+    expect(rf[0]).toMatchObject({ id: e.id, source: a.key, target: b.key, type: "rel" });
+    expect((rf[0].data as { modelEdgeId?: string }).modelEdgeId).toBe(e.id);
+  });
+
+  test("buildAnchorEdges drops connectors whose endpoints are missing", () => {
+    const s = createModelStore();
+    const note = s.addNode({ x: 0, y: 0 });
+    s.updateNode(note.key, { type: "uml.Note" });
+    const { nodes: n, edges: ed } = s.get();
+    // Note annotates nothing present → no anchor edges, and never throws.
+    expect(buildAnchorEdges(n, ed)).toEqual([]);
   });
 });

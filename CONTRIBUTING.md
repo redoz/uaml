@@ -6,17 +6,18 @@ By contributing, you agree that your contributions are licensed under the projec
 
 ## Project layout (pnpm monorepo)
 
-The repo has exactly two packages — there is no backend:
+The repo has three packages — there is no backend:
 
 - `packages/okf` — pure shared lib: `ModelGraph` ⇄ OKF Markdown bundle (parse/serialize). No I/O.
-- `packages/web` — React + Vite + React Flow SPA: the canvas, ERD view, inspector, template library, OKF import/export, URL sharing, and `localStorage` persistence. Consumes `okf`'s built `dist/`.
+- `packages/core` — framework-free app logic shared across the UI: OKF I/O, model state, sync/merge, URL sharing, templates, profiles, layout sizing, and image export. No UI-framework dependencies.
+- `packages/web` — Svelte 5 + Vite + SvelteFlow SPA: the canvas, ERD view, inspector, template library, OKF import/export, URL sharing, and `localStorage` persistence. Consumes `okf` and `core`.
 
 ## Local setup
 
 ```bash
 corepack pnpm install
-corepack pnpm --filter @mc/okf build   # web consumes okf's built dist — build okf first
-corepack pnpm --filter @mc/web dev      # Vite dev server on :5173
+corepack pnpm --filter @uaml/okf build   # web consumes okf's built dist — build okf first
+corepack pnpm --filter @uaml/web dev      # Vite dev server on :5173
 ```
 
 Open http://localhost:5173. The canvas is fully client-side — no server, no sign-in.
@@ -24,8 +25,8 @@ Open http://localhost:5173. The canvas is fully client-side — no server, no si
 To check the production build:
 
 ```bash
-corepack pnpm --filter @mc/web build     # emits packages/web/dist
-corepack pnpm --filter @mc/web preview    # serves the built dist/
+corepack pnpm --filter @uaml/web build     # emits packages/web/dist
+corepack pnpm --filter @uaml/web preview    # serves the built dist/
 ```
 
 ## Tests & checks

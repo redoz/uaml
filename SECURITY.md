@@ -18,10 +18,11 @@ This is an actively developed project; security fixes target the latest `main`. 
 
 ## Security model (context for reporters)
 
-OKF Canvas is a **purely static, client-side single-page app** — there is no backend, no accounts, and no authentication. The two components are:
+OKF Canvas is a **purely static, client-side single-page app** — there is no backend, no accounts, and no authentication. The components are:
 
 - `packages/okf` — a pure parse/serialize library for OKF Markdown bundles (no I/O).
-- `packages/web` — the React/Vite SPA that runs entirely in the browser.
+- `packages/core` — framework-free app logic (OKF I/O, state, sync, sharing, templates) shared by the UI.
+- `packages/web` — the Svelte 5 / Vite SPA that runs entirely in the browser.
 
 Because everything runs in the browser, the relevant properties are:
 

@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "jsx": "react-jsx",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "checkJs": false,
+    "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src", "svelte.config.js", "vite.config.ts"]
 }
