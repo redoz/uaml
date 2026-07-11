@@ -1,4 +1,4 @@
-import type { ModelGraph, ModelNode, ModelEdge, Attribute, RelEnd, RelationshipKind, NoteAnchor } from "./types";
+import type { ModelGraph, ModelNode, ModelEdge, Attribute, RelEnd, RelationshipKind, NoteAnchor, Diagram, DiagramHints } from "./types";
 import { endsFromCardinality } from "./migrate";
 import { parseFrontmatter } from "./slug";
 import { parseAttributeLine, parseValueLine, parseRelationshipLine } from "./grammar";
@@ -52,10 +52,12 @@ function parseAnnotatesLine(line: string, resolve: (slug: string) => string | un
 }
 
 export function parseBundle(files: Record<string, string>): ModelGraph {
-  // Every markdown doc is a node. Navigation `index.md` files are the only
-  // non-nodes, distinguished by filename.
-  const docs = Object.entries(files)
+  // Every markdown doc is a node. Navigation `index.md` files and `type: Diagram`
+  // docs (curated views, not classifiers) are the only non-nodes.
+  const all = Object.entries(files)
     .filter(([p]) => p.endsWith(".md") && !p.endsWith("index.md"));
+  const diagramDocs = all.filter(([, t]) => parseFrontmatter(t).data.type === "Diagram");
+  const docs = all.filter(([, t]) => parseFrontmatter(t).data.type !== "Diagram");
 
   // Pass 1: build the fileSlug → node-key map so links resolve regardless of
   // declaration order (attribute refs, association names, and note anchors all need it).
@@ -225,7 +227,55 @@ export function parseBundle(files: Record<string, string>): ModelGraph {
       seen.set(dupKey, e); edges.push(e);
     }
   }
-  return { nodes, edges, diagrams: [] };
+  // Diagram docs: curated views over the nodes. Members resolve to node keys and
+  // carry optional `at x,y` positions onto node.position (pinned decision 4).
+  const diagrams: Diagram[] = [];
+  const MEMBER_RE = /^- \[[^\]]*\]\(\.\/(.+?)\.md\)(?:\s+at\s+(-?\d+)\s*,\s*(-?\d+))?\s*$/;
+  for (const [path, text] of diagramDocs) {
+    const { data, body } = parseFrontmatter(text);
+    const key = path.split("/").pop()!.replace(/\.md$/, "");
+    const { sections } = splitSections(body);
+    const membersSec = sections.find(s => /^members$/i.test(s.title));
+    const hintsSec = sections.find(s => /^render hints$/i.test(s.title));
+    const members: string[] = [];
+    for (const raw of membersSec?.lines ?? []) {
+      const m = MEMBER_RE.exec(raw.replace(/\r$/, "").trim());
+      if (!m) continue;
+      const k = slugToKey.get(basename(m[1]));
+      if (!k) continue;
+      members.push(k);
+      if (m[2] !== undefined) {
+        const n = nodes.find(x => x.key === k);
+        if (n) n.position = { x: Number(m[2]), y: Number(m[3]) };
+      }
+    }
+    const hints: DiagramHints = {};
+    for (const raw of hintsSec?.lines ?? []) {
+      const ln = raw.replace(/\r$/, "").trim();
+      const em = /^- emphasize:\s*(.+)$/i.exec(ln);
+      if (em) { hints.emphasize = em[1].split(",").map(s => s.trim()).filter(Boolean); continue; }
+      const co = /^- collapse \[[^\]]*\]\(\.\/(.+?)\.md\)\s*$/i.exec(ln);
+      if (co) {
+        const k = slugToKey.get(basename(co[1]));
+        if (k) hints.collapse = [...(hints.collapse ?? []), k];
+        continue;
+      }
+      const at = MEMBER_RE.exec(ln); // hints may also carry "- [T](./s.md) at x,y" (spec example)
+      if (at && at[2] !== undefined) {
+        const k = slugToKey.get(basename(at[1]));
+        const n = k ? nodes.find(x => x.key === k) : undefined;
+        if (n) n.position = { x: Number(at[2]), y: Number(at[3]) };
+      }
+    }
+    diagrams.push({
+      key,
+      title: data.title || "Untitled diagram",
+      profile: typeof data.profile === "string" && data.profile ? data.profile : "uml-domain",
+      members,
+      ...(hints.emphasize || hints.collapse ? { hints } : {}),
+    });
+  }
+  return { nodes, edges, diagrams };
 }
 
 // ── Legacy `# Schema` readers (tables + Google-era bullet lists) ─────────────

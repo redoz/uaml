@@ -91,7 +91,9 @@ export function serializeBundle(graph: ModelGraph, projectTitle = "Model"): OkfB
   }
 
   const slugByKey = new Map<string, string>();
-  const taken = new Set<string>();
+  // Pre-seed with diagram keys so a node whose slug collides with a diagram file
+  // name gets suffixed instead of overwriting the diagram doc.
+  const taken = new Set<string>(graph.diagrams.map(d => d.key));
   for (const n of graph.nodes) {
     if (collapsed.has(n.key)) continue;
     const s = slugify(n.title, n.key);
@@ -105,6 +107,26 @@ export function serializeBundle(graph: ModelGraph, projectTitle = "Model"): OkfB
   for (const n of graph.nodes) {
     if (collapsed.has(n.key)) continue;
     files[`${folder}/${slugByKey.get(n.key)}.md`] = renderNode(n, graph, slugByKey, notesByHost.get(n.key) ?? []);
+  }
+
+  // Diagram docs: one `<folder>/<diagram.key>.md` per curated view. Members carry
+  // `at x,y` from node positions; collapse hints emit as `- collapse [T](./slug.md)`.
+  for (const d of graph.diagrams) {
+    const memberLines = d.members.map(k => {
+      const n = graph.nodes.find(x => x.key === k);
+      if (!n) return null;
+      const at = n.position.x !== 0 || n.position.y !== 0 ? ` at ${Math.round(n.position.x)},${Math.round(n.position.y)}` : "";
+      return `- [${n.title}](./${slugByKey.get(k)}.md)${at}`;
+    }).filter((l): l is string => l !== null);
+    const hintLines: string[] = [];
+    if (d.hints?.emphasize?.length) hintLines.push(`- emphasize: ${d.hints.emphasize.join(", ")}`);
+    for (const k of d.hints?.collapse ?? []) {
+      const n = graph.nodes.find(x => x.key === k);
+      if (n) hintLines.push(`- collapse [${n.title}](./${slugByKey.get(k)}.md)`);
+    }
+    const hints = hintLines.length ? `\n## Render hints\n${hintLines.join("\n")}\n` : "";
+    const fm = renderFrontmatter({ type: "Diagram", title: d.title, profile: d.profile });
+    files[`${folder}/${d.key}.md`] = `---\n${fm}\n---\n\n# ${d.title}\n\n## Members\n${memberLines.join("\n")}\n${hints}`;
   }
 
   const rows = graph.nodes
