@@ -3,8 +3,8 @@
    `.react-flow__*`; every selector below is renamed accordingly. */
 
 /* Show handles on node hover/select */
-.svelte-flow__node:hover .mart-handle,
-.svelte-flow__node.selected .mart-handle {
+.svelte-flow__node:hover .node-handle,
+.svelte-flow__node.selected .node-handle {
   opacity: 1 !important;
 }
 
