@@ -50,6 +50,9 @@ export interface ModelNode {
   note_body?: string;
   /** uml.Note anchor targets; the ## Notes shorthand desugars into a self-anchored note. */
   annotates?: NoteAnchor[];
+  /** Ordered member keys (classifiers, diagrams, sub-packages). Meaningful only
+   *  on uml.Package nodes; absent elsewhere. */
+  members?: string[];
   position: { x: number; y: number };
   /** Raw markdown of unrecognized ## sections — carried through round-trip, never dropped. */
   extra?: string;
@@ -127,6 +130,10 @@ export interface ModelGraph {
   edges: ModelEdge[];
   /** Empty array ⇒ the canvas shows one implicit diagram containing every node. */
   diagrams: Diagram[];
+  /** Bundle/root name (export label + navigator root crumb). */
+  path: string;
+  /** Discovered uml.Package nodes (root has key ""), carrying ordered `members`. */
+  packages: ModelNode[];
 }
 
 /** Split "family.Metaclass". Null for opaque/legacy tokens. */
