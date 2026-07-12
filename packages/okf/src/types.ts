@@ -49,6 +49,9 @@ export interface ModelNode {
   values?: string[];
   /** uml.Note markdown body (from ## Body). */
   body?: string;
+  /** uml.Note markdown prose (from ## Body), byte-identical to `body` during the
+   *  flat→concept migration. Sole reader is the note node renderer. */
+  note_body?: string;
   /** uml.Note anchor targets; the ## Notes shorthand desugars into a self-anchored note. */
   annotates?: NoteAnchor[];
   position: { x: number; y: number };
