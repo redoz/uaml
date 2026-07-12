@@ -1,3 +1,11 @@
+import { initWasm } from "@uaml/okf";
+
+// The bundle-as-truth store derives its model via the WASM core synchronously, so
+// every test that imports the store singleton (directly or via `model.svelte` /
+// `bootstrap`) needs the wasm module ready before its top-level imports evaluate.
+// Setup files run before the test module is imported, so init it here once.
+await initWasm();
+
 // jsdom has no ResizeObserver; @xyflow/svelte needs one to mount its panes.
 class ResizeObserverStub {
   observe() {}

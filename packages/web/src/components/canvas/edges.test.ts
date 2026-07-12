@@ -1,8 +1,12 @@
-import { describe, it, test, expect } from "vitest";
+import { describe, it, test, expect, beforeAll } from "vitest";
 import type { ModelNode, ModelEdge } from "@uaml/okf";
-import { DEFAULT_DISPLAY, type DiagramDisplay } from "@uaml/okf";
+import { DEFAULT_DISPLAY, initWasm, type DiagramDisplay } from "@uaml/okf";
 import { createModelStore } from "@uaml/core/state/model";
 import { buildRfEdges, isEdgeReconnectable, buildAnchorEdges } from "./edges";
+
+beforeAll(async () => {
+  await initWasm();
+});
 
 const node = (key: string, x = 0): ModelNode =>
   ({ key, title: key, type: "uml.Class", stereotypes: [], attributes: [], position: { x, y: 0 } });
