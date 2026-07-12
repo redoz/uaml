@@ -6,7 +6,7 @@
     "dev": "pnpm --filter @uaml/web dev",
     "dev:web": "pnpm --filter @uaml/web dev",
     "build:wasm": "node scripts/build-wasm.mjs",
-    "build": "pnpm --filter @uaml/okf build && pnpm --filter @uaml/core build && pnpm --filter @uaml/web build",
+    "build": "pnpm --filter @uaml/wasm build && pnpm --filter @uaml/okf build && pnpm --filter @uaml/core build && pnpm --filter @uaml/web build",
     "serve": "pnpm build && pnpm --filter @uaml/web preview",
     "test": "pnpm -r test",
     "lint": "eslint .",
