@@ -79,24 +79,25 @@ describe("buildRfEdges data passthrough (driven by the active diagram's display)
     expect((out[0].data as { toEnd?: { multiplicity?: string } }).toEnd?.multiplicity).toBe("1");
   });
 
-  it("threads associationLabels into edge data", () => {
-    const out = buildRfEdges([edge()], nodes, disp({ associationLabels: "hidden" }));
-    expect((out[0].data as { associationLabels?: string }).associationLabels).toBe("hidden");
+  it("threads showRoles/showCardinality/showLabels into edge data", () => {
+    const out = buildRfEdges([edge()], nodes, disp({ showRoles: false, showCardinality: false, showLabels: false }));
+    const d = out[0].data as { showRoles?: boolean; showCardinality?: boolean; showLabels?: boolean };
+    expect(d.showRoles).toBe(false);
+    expect(d.showCardinality).toBe(false);
+    expect(d.showLabels).toBe(false);
   });
 
-  it("reflects associationLabels 'all' (the default) into edge data", () => {
+  it("defaults showRoles/showCardinality/showLabels to true (per DEFAULT_DISPLAY)", () => {
     const out = buildRfEdges([edge()], nodes, disp());
-    expect((out[0].data as { associationLabels?: string }).associationLabels).toBe("all");
+    const d = out[0].data as { showRoles?: boolean; showCardinality?: boolean; showLabels?: boolean };
+    expect(d.showRoles).toBe(true);
+    expect(d.showCardinality).toBe(true);
+    expect(d.showLabels).toBe(true);
   });
 
-  it("threads emphasizeMultiplicity into every edge's data", () => {
-    const out = buildRfEdges([edge(), edge({ id: "e2" })], nodes, disp({ emphasizeMultiplicity: true }));
-    expect(out.every(e => (e.data as { emphasizeMultiplicity?: boolean }).emphasizeMultiplicity === true)).toBe(true);
-  });
-
-  it("defaults emphasizeMultiplicity to false (per DEFAULT_DISPLAY)", () => {
-    const out = buildRfEdges([edge()], nodes, disp());
-    expect((out[0].data as { emphasizeMultiplicity?: boolean }).emphasizeMultiplicity).toBe(false);
+  it("carries the edge's name into edge data", () => {
+    const out = buildRfEdges([edge({ name: "places" })], nodes, disp());
+    expect((out[0].data as { name?: unknown }).name).toBe("places");
   });
 });
 

@@ -114,10 +114,12 @@ export interface DiagramDisplay {
   showAttributeMultiplicity: boolean;
   /** Cap on attribute rows drawn per box; excess folded as "+K more". Absent ⇒ unlimited. */
   maxAttributes?: number;
-  /** Whether association edges carry their multiplicity/role labels. */
-  associationLabels: "all" | "hidden";
-  /** Visually emphasize multiplicity on association labels. */
-  emphasizeMultiplicity: boolean;
+  /** Show each association end's role name. */
+  showRoles: boolean;
+  /** Show each association end's cardinality (multiplicity). */
+  showCardinality: boolean;
+  /** Show the association's reading-label name at the line midpoint. */
+  showLabels: boolean;
   /** Show the «stereotype» / keyword row on class boxes. */
   showStereotype: boolean;
   /** Allowlist of stereotype tag names to render. Absent ⇒ show all; [] ⇒ show none. */
@@ -133,8 +135,9 @@ export const DEFAULT_DISPLAY: DiagramDisplay = {
   showAttributeVisibility: true,
   showAttributeMultiplicity: true,
   // maxAttributes omitted ⇒ undefined ⇒ unlimited
-  associationLabels: "all",
-  emphasizeMultiplicity: false,
+  showRoles: true,
+  showCardinality: true,
+  showLabels: true,
   showStereotype: true,
   // stereotypeFilter omitted ⇒ undefined ⇒ show all
   stereotypeColors: {},

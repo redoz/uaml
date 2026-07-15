@@ -18,12 +18,22 @@ export function edgeStereotype(kind: RelationshipKind): string | undefined {
 // sourceHandle/targetHandle is pinned; the hover connect-dots stay implicit.
 type EndPlacement = { sourceSide: Position; targetSide: Position; sourceSlot: Slot; targetSlot: Slot };
 
-function compactEdge(e: ModelEdge, place: EndPlacement | undefined, associationLabels: DiagramDisplay["associationLabels"], emphasizeMultiplicity: boolean): Edge {
+function compactEdge(
+  e: ModelEdge,
+  place: EndPlacement | undefined,
+  showRoles: boolean,
+  showCardinality: boolean,
+  showLabels: boolean,
+): Edge {
   return {
     id: e.id, source: e.from, target: e.to,
     type: "rel",
-    // RelEdge reads `associationLabels` (show/hide) + `emphasizeMultiplicity`.
-    data: { kind: e.kind, fromEnd: e.fromEnd, toEnd: e.toEnd, bidirectional: e.bidirectional, modelEdgeId: e.id, associationLabels, emphasizeMultiplicity, ...place } as unknown as Record<string, unknown>,
+    // RelEdge reads `showRoles`/`showCardinality` (per-end text) + `showLabels`
+    // (the association's reading-label `name`, rendered at the line midpoint).
+    data: {
+      kind: e.kind, fromEnd: e.fromEnd, toEnd: e.toEnd, bidirectional: e.bidirectional, modelEdgeId: e.id,
+      name: e.name, showRoles, showCardinality, showLabels, ...place,
+    } as unknown as Record<string, unknown>,
   };
 }
 
@@ -87,11 +97,11 @@ function planPlacements(edges: ModelEdge[], nodes: ModelNode[], display: Diagram
 }
 
 // Builds one 'rel' edge per model edge, threading the active diagram's resolved
-// display (association-label visibility + multiplicity emphasis) into edge data,
-// and sizing nodes for placement via the same display.
+// display (role/cardinality/label visibility) into edge data, and sizing nodes
+// for placement via the same display.
 export function buildRfEdges(edges: ModelEdge[], nodes: ModelNode[], display: DiagramDisplay): Edge[] {
   const placements = planPlacements(edges, nodes, display);
-  return edges.map(e => compactEdge(e, placements.get(e.id), display.associationLabels, display.emphasizeMultiplicity));
+  return edges.map(e => compactEdge(e, placements.get(e.id), display.showRoles, display.showCardinality, display.showLabels));
 }
 
 // Synthesise the dashed connectors that tie annotation elements to what they
