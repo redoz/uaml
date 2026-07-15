@@ -6,6 +6,7 @@
     "dev": "pnpm --filter @waml/web dev",
     "dev:web": "pnpm --filter @waml/web dev",
     "build:wasm": "node scripts/build-wasm.mjs",
+    "gen:templates": "node scripts/gen-template-bundles.mjs",
     "build": "pnpm --filter @waml/wasm build && pnpm --filter @waml/okf build && pnpm --filter @waml/core build && pnpm --filter @waml/web build",
     "serve": "pnpm build && pnpm --filter @waml/web preview",
     "test": "pnpm -r test",
