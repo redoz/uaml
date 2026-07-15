@@ -222,10 +222,10 @@ export interface FlowDoc {
 // absent on graphs with no interaction classifiers.
 
 /** Message verb. */
-export type MessageVerb = "calls" | "responds";
+export type MessageVerb = "calls" | "sends" | "replies" | "creates" | "destroys";
 
 /** Fragment kind. */
-export type FragmentKind = "alt" | "opt" | "loop" | "break" | "par" | "seq" | "strict" | "neg" | "assert" | "ignore" | "consider" | "decorate";
+export type FragmentKind = "alt" | "opt" | "loop";
 
 /** A resolved lifeline (actor/object). */
 export interface Lifeline {
