@@ -17,6 +17,7 @@ pub mod serialize;
 pub mod syntax;
 pub mod uml;
 pub mod validate;
+pub mod wire;
 
 #[cfg(test)]
 mod smoke {

@@ -38,9 +38,9 @@ export function build_bundle(bundle) {
 }
 
 /**
- * `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `Model`.
+ * `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `WireGraph`.
  * @param {any} bundle
- * @returns {Model}
+ * @returns {WireGraph}
  */
 export function build_model(bundle) {
     const ret = wasm.build_model(bundle);

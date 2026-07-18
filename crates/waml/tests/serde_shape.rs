@@ -47,6 +47,44 @@ fn model_json_matches_ts_field_names() {
 }
 
 #[test]
+fn wire_json_matches_ts_field_names() {
+    let model = build_model(&bundle());
+    let wire = waml::wire::build_wire(&model);
+    let v = serde_json::to_value(&wire).unwrap();
+
+    let node = &v["nodes"][0];
+    assert_eq!(node["type"], "uml.Class");
+    assert_eq!(node["key"], "m/order");
+    assert_eq!(node["concept"]["id"], "m/order");
+    assert_eq!(node["concept"]["title"], "Order");
+    assert_eq!(node["attributes"][0]["name"], "id");
+    assert_eq!(node["attributes"][0]["type"]["name"], "OrderId");
+
+    let edge = &v["edges"][0];
+    assert_eq!(edge["kind"], "composes");
+    assert_eq!(edge["from"], "m/order");
+    assert_eq!(edge["to"], "m/line");
+}
+
+#[test]
+fn wire_diagram_members_are_flattened_in_rust() {
+    // A diagram with a nested group forest must surface a FLAT `members` list.
+    let b = vec![(
+        "d.md".to_string(),
+        "---\ntype: Diagram\ntitle: D\n---\n# D\n\n## Members\n\n### Group A\n- [X](./x.md)\n\n#### Sub\n- [Y](./y.md)\n".to_string(),
+    ),
+        ("x.md".to_string(), "---\ntype: uml.Class\ntitle: X\n---\n# X\n".to_string()),
+        ("y.md".to_string(), "---\ntype: uml.Class\ntitle: Y\n---\n# Y\n".to_string()),
+    ];
+    let wire = waml::wire::build_wire(&build_model(&b));
+    let v = serde_json::to_value(&wire).unwrap();
+    let members = v["diagrams"][0]["members"].as_array().unwrap();
+    assert!(members.iter().any(|m| m == "x"), "flat members must include x: {members:?}");
+    assert!(members.iter().any(|m| m == "y"), "flat nested members must include y: {members:?}");
+    assert!(v["diagrams"][0].get("groups").is_none(), "wire diagram has no groups: {}", v["diagrams"][0]);
+}
+
+#[test]
 fn stringy_newtypes_serialize_as_their_canonical_string() {
     // Multiplicity ⇒ bare string.
     assert_eq!(

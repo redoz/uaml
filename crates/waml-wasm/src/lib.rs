@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 // ── Pure, natively-testable cores ────────────────────────────────────────────
 
 pub fn build_model_json(bundle: &[(String, String)]) -> String {
-    serde_json::to_string(&waml::parse::build_model(bundle)).unwrap()
+    serde_json::to_string(&waml::wire::build_wire(&waml::parse::build_model(bundle))).unwrap()
 }
 
 /// Project each document to its OKF [`Concept`](waml::okf::Concept), returning
@@ -92,11 +92,11 @@ pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-/// `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `Model`.
+/// `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `WireGraph`.
 #[wasm_bindgen]
-pub fn build_model(bundle: JsValue) -> Result<waml::model::Model, JsValue> {
+pub fn build_model(bundle: JsValue) -> Result<waml::wire::WireGraph, JsValue> {
     let b: Vec<(String, String)> = serde_wasm_bindgen::from_value(bundle)?;
-    Ok(waml::parse::build_model(&b))
+    Ok(waml::wire::build_wire(&waml::parse::build_model(&b)))
 }
 
 /// `bundle`: a `[path, markdown][]`. Returns the resolved OKF `Bundle` (one

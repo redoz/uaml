@@ -191,6 +191,37 @@ export interface Bundle {
 }
 
 /**
+ * Flat diagram DTO. `members` is flattened from the object model\'s `groups` in
+ * Rust (moves `overlay.ts::flattenGroups` into Rust). `display`/`layout` unchanged.
+ */
+export interface WireDiagram {
+    key: string;
+    title: string;
+    profile: string;
+    description?: string;
+    members: string[];
+    display?: DiagramDisplay;
+    layout: unknown[];
+}
+
+/**
+ * Flat node DTO == today\'s `ModelNode` minus `position` (position is TS overlay
+ * state). Field names/serde match the pre-reshape `Node` exactly.
+ */
+export interface WireNode {
+    concept: Concept;
+    key: string;
+    type: string;
+    stereotypes: string[];
+    abstract?: boolean;
+    attributes: Attribute[];
+    values?: string[];
+    note_body?: string;
+    annotates?: NoteAnchor[];
+    members?: string[];
+}
+
+/**
  * Flow flavor: tunes rendering only — one grammar for both.
  */
 export type FlowFlavor = "activity" | "stateMachine";
@@ -510,6 +541,26 @@ export interface SolvedGroup {
     depth: number;
 }
 
+export interface WireEdge {
+    from: string;
+    to: string;
+    kind: RelationshipKind;
+    name?: string | { ref: string };
+    fromEnd: RelEnd;
+    toEnd: RelEnd;
+    bidirectional: boolean;
+}
+
+export interface WireGraph {
+    nodes: WireNode[];
+    edges: WireEdge[];
+    diagrams: WireDiagram[];
+    path?: string;
+    packages?: WireNode[];
+    flows?: FlowDoc[];
+    interactions?: SequenceDoc[];
+}
+
 export type DiagCode = "duplicate-slug" | "frontmatter-not-clean" | "unknown-type" | "malformed-attribute" | "malformed-relationship" | "malformed-flow-bullet" | "duplicate-flow-node" | "unresolved-target" | "droppable-content" | "malformed-layout" | "unresolved-layout-ref" | "layout-cycle" | "layout-conflict" | "malformed-message" | "malformed-lifeline";
 
 export type DiagramKind = { Uml: UmlDiagram } | { Unknown: string };
@@ -550,9 +601,9 @@ export function apply_ops(bundle: any, ops: OpDto[]): any;
 export function build_bundle(bundle: any): any;
 
 /**
- * `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `Model`.
+ * `bundle`: a `[path, markdown][]` (array of pairs). Returns the resolved `WireGraph`.
  */
-export function build_model(bundle: any): Model;
+export function build_model(bundle: any): WireGraph;
 
 /**
  * `bundle`: a `[path, markdown][]`. Returns the canonicalized bundle.

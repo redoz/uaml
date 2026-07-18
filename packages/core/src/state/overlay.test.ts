@@ -41,7 +41,7 @@ function model(partial: {
 }
 
 describe("toModelGraph", () => {
-  it("flattens a diagram's group forest to flat members in declared, depth-first order", () => {
+  it("passes the wire's flat diagram members straight through (flattening now happens in Rust)", () => {
     const m = model({
       nodes: [
         { key: "order", type: "uml.Class", stereotypes: [], attributes: [] },
@@ -54,20 +54,13 @@ describe("toModelGraph", () => {
           key: "d1",
           title: "D1",
           profile: "uml-domain",
-          groups: [
-            {
-              name: "A",
-              members: ["order", "customer"],
-              children: [{ name: "B", members: ["line"], children: [] }],
-            },
-            { name: "C", members: ["money"], children: [] },
-          ],
+          // The Rust wire already flattened the group forest depth-first.
+          members: ["order", "customer", "line", "money"],
         },
       ],
     });
     const g = toModelGraph(m, emptyOverlay());
     expect(g.diagrams).toHaveLength(1);
-    // group A members, then A's child B, then group C — declared/depth-first.
     expect(g.diagrams[0].members).toEqual(["order", "customer", "line", "money"]);
     expect(g.diagrams[0].key).toBe("d1");
   });
@@ -215,7 +208,7 @@ describe("toModelGraph diagram display/description", () => {
   it("parses stereotypeColors list into a record and copies scalars", () => {
     const g = toModelGraph(
       modelWith({
-        key: "d", title: "D", profile: "uml-domain", groups: [],
+        key: "d", title: "D", profile: "uml-domain", members: [],
         description: "Notes",
         display: { showAttributes: false, maxAttributes: 6, stereotypeColors: ["entity:#ffedd5"] },
       }),
@@ -227,14 +220,14 @@ describe("toModelGraph diagram display/description", () => {
 
   it("splits stereotypeColors on the first colon (hex keeps its own colons? no — hex has none)", () => {
     const g = toModelGraph(
-      modelWith({ key: "d", title: "D", profile: "uml-domain", groups: [], display: { stereotypeColors: ["entity:#ffedd5"] } }),
+      modelWith({ key: "d", title: "D", profile: "uml-domain", members: [], display: { stereotypeColors: ["entity:#ffedd5"] } }),
       emptyOverlay(),
     );
     expect(g.diagrams[0].display?.stereotypeColors).toEqual({ entity: "#ffedd5" });
   });
 
   it("leaves display undefined when the wire carries no display", () => {
-    const g = toModelGraph(modelWith({ key: "d", title: "D", profile: "uml-domain", groups: [] }), emptyOverlay());
+    const g = toModelGraph(modelWith({ key: "d", title: "D", profile: "uml-domain", members: [] }), emptyOverlay());
     expect(g.diagrams[0].display).toBeUndefined();
     expect(g.diagrams[0].description).toBeUndefined();
   });
