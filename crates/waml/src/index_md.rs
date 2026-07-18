@@ -73,7 +73,7 @@ pub fn reindex_bundle(bundle: &[(String, String)]) -> Vec<(String, String)> {
         meta.insert(n.key.clone(), (n.label.clone(), false, desc));
     }
     for d in &model.diagrams {
-        meta.insert(d.key.clone(), (d.title.clone(), false, None));
+        meta.insert(d.key.clone(), (d.label.clone(), false, None));
     }
     for p in &model.packages {
         meta.insert(p.key.clone(), (p.label.clone(), true, None));

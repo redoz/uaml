@@ -877,29 +877,45 @@ pub struct DiagramGroup {
     pub children: Vec<DiagramGroup>,
 }
 
+/// A substrate diagram: identity + display name + ontology payload (design
+/// spec §2/§3.3). `label` is the render title (not `title` — that is OKF
+/// storage). All UML render concerns (flavor/profile/groups/display/layout)
+/// live behind `DiagramKind::Uml`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(into_wasm_abi, from_wasm_abi))]
 pub struct Diagram {
     pub key: String,
-    pub title: String,
-    pub profile: String,
-    #[cfg_attr(
-        feature = "serde",
-        serde(default, skip_serializing_if = "Option::is_none")
-    )]
-    pub description: Option<String>,
-    pub groups: Vec<DiagramGroup>,
-    // `layout` carries the raw layout AST (`syntax::LayoutStatement`). Serialized
-    // end to end (Phase 2) so the frontend can read the layout relations.
-    #[cfg_attr(feature = "wasm", tsify(type = "unknown[]"))]
-    pub layout: Vec<crate::syntax::LayoutStatement>,
-    #[cfg_attr(
-        feature = "serde",
-        serde(default, skip_serializing_if = "DiagramDisplay::is_empty")
-    )]
-    pub display: DiagramDisplay,
+    pub label: String,
+    pub kind: DiagramKind,
+}
+
+impl Diagram {
+    fn uml(&self) -> Option<&crate::uml::UmlDiagram> {
+        match &self.kind {
+            DiagramKind::Uml(u) => Some(u),
+            DiagramKind::Unknown(_) => None,
+        }
+    }
+    pub fn flavor(&self) -> Option<crate::uml::UmlDiagramFlavor> {
+        self.uml().map(|u| u.flavor)
+    }
+    pub fn profile(&self) -> &str {
+        self.uml().map(|u| u.profile.as_str()).unwrap_or("")
+    }
+    pub fn description(&self) -> Option<&str> {
+        self.uml().and_then(|u| u.description.as_deref())
+    }
+    pub fn groups(&self) -> &[DiagramGroup] {
+        self.uml().map(|u| u.groups.as_slice()).unwrap_or(&[])
+    }
+    pub fn display(&self) -> Option<&DiagramDisplay> {
+        self.uml().map(|u| &u.display)
+    }
+    pub fn layout(&self) -> &[crate::syntax::LayoutStatement] {
+        self.uml().map(|u| u.layout.as_slice()).unwrap_or(&[])
+    }
 }
 
 /// A diagram's authored render settings — a PARTIAL. Only keys present in the

@@ -18,9 +18,7 @@ pub fn parse(argv: &[String]) -> Result<Args, String> {
         match argv[i].as_str() {
             "--diagram" => {
                 i += 1;
-                diagram = Some(
-                    argv.get(i).cloned().ok_or("--diagram requires a value")?,
-                );
+                diagram = Some(argv.get(i).cloned().ok_or("--diagram requires a value")?);
             }
             other if dir.is_none() => dir = Some(PathBuf::from(other)),
             other => return Err(format!("unexpected argument: {other}")),
@@ -36,7 +34,7 @@ pub fn parse(argv: &[String]) -> Result<Args, String> {
 /// Pick a diagram by title or key; fall back to the first diagram.
 pub fn select_diagram<'a>(model: &'a Model, wanted: Option<&str>) -> Option<&'a Diagram> {
     if let Some(w) = wanted {
-        if let Some(d) = model.diagrams.iter().find(|d| d.title == w || d.key == w) {
+        if let Some(d) = model.diagrams.iter().find(|d| d.label == w || d.key == w) {
             return Some(d);
         }
     }
@@ -77,14 +75,14 @@ mod tests {
         let model = load::load_model(&dir).unwrap();
 
         let by_title = select_diagram(&model, Some("Orders")).unwrap();
-        assert_eq!(by_title.title, "Orders");
+        assert_eq!(by_title.label, "Orders");
 
         // Unknown name falls back to the first diagram rather than None.
         let fallback = select_diagram(&model, Some("nope")).unwrap();
-        assert_eq!(fallback.title, "Orders");
+        assert_eq!(fallback.label, "Orders");
 
         let default = select_diagram(&model, None).unwrap();
-        assert_eq!(default.title, "Orders");
+        assert_eq!(default.label, "Orders");
     }
 
     // Two-diagram coverage: the single-diagram fixture above can't distinguish a
@@ -92,23 +90,30 @@ mod tests {
     // the `d.key == w` arm at all. `Model`/`Diagram` have all-`pub` fields and
     // `Model: Default`, so we build a tiny two-diagram model by hand rather than
     // adding a second OKF fixture.
-    use waml::model::DiagramDisplay;
+    use waml::model::{DiagramDisplay, DiagramKind};
+    use waml::uml::{UmlDiagram, UmlDiagramFlavor};
 
     fn diagram(key: &str, title: &str) -> Diagram {
         Diagram {
             key: key.to_string(),
-            title: title.to_string(),
-            profile: "erd".to_string(),
-            description: None,
-            groups: vec![],
-            layout: vec![],
-            display: DiagramDisplay::default(),
+            label: title.to_string(),
+            kind: DiagramKind::Uml(UmlDiagram {
+                flavor: UmlDiagramFlavor::Class,
+                profile: "erd".to_string(),
+                description: None,
+                groups: vec![],
+                layout: vec![],
+                display: DiagramDisplay::default(),
+            }),
         }
     }
 
     fn two_diagram_model() -> Model {
         Model {
-            diagrams: vec![diagram("orders-key", "Orders"), diagram("inventory-key", "Inventory")],
+            diagrams: vec![
+                diagram("orders-key", "Orders"),
+                diagram("inventory-key", "Inventory"),
+            ],
             ..Default::default()
         }
     }
@@ -118,7 +123,7 @@ mod tests {
         let model = two_diagram_model();
         let picked = select_diagram(&model, Some("Inventory")).unwrap();
         assert_eq!(picked.key, "inventory-key");
-        assert_eq!(picked.title, "Inventory");
+        assert_eq!(picked.label, "Inventory");
     }
 
     #[test]
@@ -126,7 +131,7 @@ mod tests {
         let model = two_diagram_model();
         // Exercises the `d.key == w` arm: "inventory-key" is not a title.
         let picked = select_diagram(&model, Some("inventory-key")).unwrap();
-        assert_eq!(picked.title, "Inventory");
+        assert_eq!(picked.label, "Inventory");
         assert_eq!(picked.key, "inventory-key");
     }
 

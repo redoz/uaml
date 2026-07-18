@@ -113,7 +113,7 @@ fn member_title(model: &crate::model::Model, k: &str) -> String {
                 .diagrams
                 .iter()
                 .find(|d| d.key == k)
-                .map(|d| d.title.clone())
+                .map(|d| d.label.clone())
         })
         .or_else(|| {
             model
@@ -195,7 +195,7 @@ fn write_package_index(
                         .diagrams
                         .iter()
                         .find(|d| d.key == k)
-                        .map(|d| (d.title.clone(), false, None))
+                        .map(|d| (d.label.clone(), false, None))
                 })
                 .or_else(|| {
                     model

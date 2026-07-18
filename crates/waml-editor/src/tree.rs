@@ -57,7 +57,7 @@ pub fn build_tree(model: &Model) -> ProjectTree {
         meta.insert(n.key.clone(), (n.label.clone(), kind_of(&n.ty())));
     }
     for d in &model.diagrams {
-        meta.insert(d.key.clone(), (d.title.clone(), TreeKind::Diagram));
+        meta.insert(d.key.clone(), (d.label.clone(), TreeKind::Diagram));
     }
     for p in &model.packages {
         meta.insert(p.key.clone(), (p.label.clone(), TreeKind::Package));
@@ -89,7 +89,7 @@ pub fn build_tree(model: &Model) -> ProjectTree {
             .iter()
             .map(|d| TreeNode {
                 key: d.key.clone(),
-                title: d.title.clone(),
+                title: d.label.clone(),
                 kind: TreeKind::Diagram,
                 children: vec![],
             })
@@ -142,8 +142,10 @@ mod tests {
     use super::*;
     use crate::load;
     use std::path::Path;
-    use waml::model::{ElementType, Model, Node, NodeKind, UmlMetaclass};
-    use waml::uml::{Classifier, ClassifierKind, Structural, UmlNode};
+    use waml::model::{DiagramKind, ElementType, Model, Node, NodeKind, UmlMetaclass};
+    use waml::uml::{
+        Classifier, ClassifierKind, Structural, UmlDiagram, UmlDiagramFlavor, UmlNode,
+    };
 
     fn mini() -> Model {
         let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/mini");
@@ -193,12 +195,15 @@ mod tests {
     fn diagram(key: &str, title: &str) -> waml::model::Diagram {
         waml::model::Diagram {
             key: key.to_string(),
-            title: title.to_string(),
-            profile: "erd".to_string(),
-            description: None,
-            groups: vec![],
-            layout: vec![],
-            display: Default::default(),
+            label: title.to_string(),
+            kind: DiagramKind::Uml(UmlDiagram {
+                flavor: UmlDiagramFlavor::Class,
+                profile: "erd".to_string(),
+                description: None,
+                groups: vec![],
+                layout: vec![],
+                display: Default::default(),
+            }),
         }
     }
 

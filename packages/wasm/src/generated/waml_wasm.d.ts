@@ -153,6 +153,18 @@ export interface Lifeline {
 }
 
 /**
+ * A substrate diagram: identity + display name + ontology payload (design
+ * spec §2/§3.3). `label` is the render title (not `title` — that is OKF
+ * storage). All UML render concerns (flavor/profile/groups/display/layout)
+ * live behind `DiagramKind::Uml`.
+ */
+export interface Diagram {
+    key: string;
+    label: string;
+    kind: DiagramKind;
+}
+
+/**
  * Activity/state-machine control pseudostates. Slice 2.
  */
 export type PseudostateKind = "Initial" | "Final" | "Decision" | "Merge" | "Fork" | "Join";
@@ -447,16 +459,6 @@ export interface Diagnostic {
      * Byte range within `line`, if the diagnostic pins a precise column span.
      */
     span: [number, number] | undefined;
-}
-
-export interface Diagram {
-    key: string;
-    title: string;
-    profile: string;
-    description?: string;
-    groups: DiagramGroup[];
-    layout: unknown[];
-    display?: DiagramDisplay;
 }
 
 export interface FlagSet {

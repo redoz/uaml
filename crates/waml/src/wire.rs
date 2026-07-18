@@ -196,12 +196,12 @@ fn wire_edge(e: &Edge) -> WireEdge {
 fn wire_diagram(d: &Diagram) -> WireDiagram {
     WireDiagram {
         key: d.key.clone(),
-        title: d.title.clone(),
-        profile: d.profile.clone(),
-        description: d.description.clone(),
-        members: flatten_groups(&d.groups),
-        display: d.display.clone(),
-        layout: d.layout.clone(),
+        title: d.label.clone(),
+        profile: d.profile().to_string(),
+        description: d.description().map(str::to_string),
+        members: flatten_groups(d.groups()),
+        display: d.display().cloned().unwrap_or_default(),
+        layout: d.layout().to_vec(),
     }
 }
 

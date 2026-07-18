@@ -71,6 +71,33 @@ fn edge_reshape_keeps_wire_flat_and_accessors_work() {
 }
 
 #[test]
+fn diagram_reshape_keeps_wire_flat_and_accessors_work() {
+    let b = vec![
+        (
+            "x.md".to_string(),
+            "---\ntype: uml.Class\ntitle: X\n---\n# X\n".to_string(),
+        ),
+        (
+            "d.md".to_string(),
+            "---\ntype: Diagram\ntitle: D\nprofile: uml-domain\n---\n# D\n\n## Members\n- [X](./x.md)\n".to_string(),
+        ),
+    ];
+    let m = build_model(&b);
+    let d = m.diagrams.iter().find(|d| d.key == "d").unwrap();
+    assert_eq!(d.label, "D");
+    assert_eq!(d.profile(), "uml-domain");
+    assert_eq!(d.flavor(), Some(waml::uml::UmlDiagramFlavor::Class));
+    assert_eq!(d.groups().iter().map(|g| g.members.len()).sum::<usize>(), 1);
+    // Wire stays flat: title/profile/members.
+    let v = serde_json::to_value(waml::wire::build_wire(&m)).unwrap();
+    let wd = &v["diagrams"][0];
+    assert_eq!(wd["title"], "D");
+    assert_eq!(wd["profile"], "uml-domain");
+    assert_eq!(wd["members"][0], "x");
+    assert!(wd.get("groups").is_none());
+}
+
+#[test]
 fn wire_json_matches_ts_field_names() {
     let model = build_model(&bundle());
     let wire = waml::wire::build_wire(&model);

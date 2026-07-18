@@ -1,10 +1,15 @@
 use std::collections::BTreeMap;
-use waml::model::{Diagram, DiagramDisplay, DiagramGroup};
+use waml::model::{Diagram, DiagramDisplay, DiagramGroup, DiagramKind};
 use waml::solve::{pretty, solve_diagram, Size, SizeMap, SolveConfig};
 use waml::syntax::*;
+use waml::uml::{UmlDiagram, UmlDiagramFlavor};
 
 fn bare(name: &str) -> Operand {
-    Operand { ref_: OperandRef::Name(NameRef::Bare(name.into())), axis: None, hints: vec![] }
+    Operand {
+        ref_: OperandRef::Name(NameRef::Bare(name.into())),
+        axis: None,
+        hints: vec![],
+    }
 }
 
 #[test]
@@ -17,18 +22,32 @@ fn orders_domain_diagram_solves_to_expected_layout() {
     };
     let diagram = Diagram {
         key: "orders".into(),
-        title: "Orders".into(),
-        profile: "uml-domain".into(),
-        description: None,
-        groups: vec![
-            DiagramGroup { name: "Users".into(), members: vec!["customer".into(), "account".into()], children: vec![] },
-            DiagramGroup { name: "Orders".into(), members: vec!["order".into()], children: vec![] },
-        ],
-        layout: vec![
-            LayoutStatement::Standalone(users_treated),
-            LayoutStatement::Placement { operands: vec![bare("Users"), bare("Orders")], directions: vec![Direction::LeftOf] },
-        ],
-        display: DiagramDisplay::default(),
+        label: "Orders".into(),
+        kind: DiagramKind::Uml(UmlDiagram {
+            flavor: UmlDiagramFlavor::Class,
+            profile: "uml-domain".into(),
+            description: None,
+            groups: vec![
+                DiagramGroup {
+                    name: "Users".into(),
+                    members: vec!["customer".into(), "account".into()],
+                    children: vec![],
+                },
+                DiagramGroup {
+                    name: "Orders".into(),
+                    members: vec!["order".into()],
+                    children: vec![],
+                },
+            ],
+            layout: vec![
+                LayoutStatement::Standalone(users_treated),
+                LayoutStatement::Placement {
+                    operands: vec![bare("Users"), bare("Orders")],
+                    directions: vec![Direction::LeftOf],
+                },
+            ],
+            display: DiagramDisplay::default(),
+        }),
     };
 
     let mut sizes: SizeMap = BTreeMap::new();

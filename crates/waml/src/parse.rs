@@ -1198,12 +1198,15 @@ fn build_diagrams(parsed: &[ParsedDoc], keyset: &HashSet<&str>) -> Vec<Diagram> 
 
         out.push(Diagram {
             key: p.id.clone(),
-            title,
-            profile,
-            description,
-            groups,
-            layout,
-            display,
+            label: title,
+            kind: crate::model::DiagramKind::Uml(crate::uml::UmlDiagram {
+                flavor: crate::uml::UmlDiagramFlavor::Class,
+                profile,
+                description,
+                groups,
+                display,
+                layout,
+            }),
         });
     }
     out
@@ -1231,8 +1234,8 @@ mod tests {
         );
         let m = build_model(&b);
         let d = &m.diagrams[0];
-        assert_eq!(d.description.as_deref(), Some("Notes"));
-        let x = &d.display;
+        assert_eq!(d.description(), Some("Notes"));
+        let x = d.display().unwrap();
         assert_eq!(x.show_attributes, Some(false));
         assert_eq!(x.show_type, Some(false)); // legacy "name-only" ⇒ false
         assert_eq!(x.show_attribute_visibility, Some(false));
@@ -1252,43 +1255,52 @@ mod tests {
     #[test]
     fn build_diagrams_distinguishes_absent_vs_empty_stereotype_filter() {
         let present = build_model(&diagram_bundle("stereotypeFilter: []\n"));
-        assert_eq!(present.diagrams[0].display.stereotype_filter, Some(vec![]));
+        assert_eq!(
+            present.diagrams[0].display().unwrap().stereotype_filter,
+            Some(vec![])
+        );
         let absent = build_model(&diagram_bundle(""));
-        assert_eq!(absent.diagrams[0].display.stereotype_filter, None);
+        assert_eq!(
+            absent.diagrams[0].display().unwrap().stereotype_filter,
+            None
+        );
     }
 
     #[test]
     fn build_diagrams_reads_show_type_and_legacy_attribute_detail() {
         let n = build_model(&diagram_bundle("showType: false\n"));
-        assert_eq!(n.diagrams[0].display.show_type, Some(false));
+        assert_eq!(n.diagrams[0].display().unwrap().show_type, Some(false));
         let t = build_model(&diagram_bundle("attributeDetail: name-type\n"));
-        assert_eq!(t.diagrams[0].display.show_type, Some(true));
+        assert_eq!(t.diagrams[0].display().unwrap().show_type, Some(true));
         let o = build_model(&diagram_bundle("attributeDetail: name-only\n"));
-        assert_eq!(o.diagrams[0].display.show_type, Some(false));
+        assert_eq!(o.diagrams[0].display().unwrap().show_type, Some(false));
         // Explicit new key wins over the legacy key.
         let both = build_model(&diagram_bundle(
             "showType: false\nattributeDetail: name-type\n",
         ));
-        assert_eq!(both.diagrams[0].display.show_type, Some(false));
+        assert_eq!(both.diagrams[0].display().unwrap().show_type, Some(false));
     }
 
     #[test]
     fn build_diagrams_maps_max_attributes_floor() {
         assert_eq!(
             build_model(&diagram_bundle("maxAttributes: 6\n")).diagrams[0]
-                .display
+                .display()
+                .unwrap()
                 .max_attributes,
             Some(6)
         );
         assert_eq!(
             build_model(&diagram_bundle("maxAttributes: 0\n")).diagrams[0]
-                .display
+                .display()
+                .unwrap()
                 .max_attributes,
             None
         );
         assert_eq!(
             build_model(&diagram_bundle("")).diagrams[0]
-                .display
+                .display()
+                .unwrap()
                 .max_attributes,
             None
         );
@@ -1297,8 +1309,8 @@ mod tests {
     #[test]
     fn build_diagrams_legacy_doc_has_no_description_and_empty_display() {
         let m = build_model(&diagram_bundle(""));
-        assert_eq!(m.diagrams[0].description, None);
-        assert!(m.diagrams[0].display.is_empty());
+        assert_eq!(m.diagrams[0].description(), None);
+        assert!(m.diagrams[0].display().unwrap().is_empty());
     }
 
     #[test]
@@ -1758,12 +1770,12 @@ mod model_tests {
         ];
         let model = build_model(&bundle);
         let d = model.diagrams.iter().find(|d| d.key == "orders").unwrap();
-        assert_eq!(d.groups.len(), 2);
-        assert_eq!(d.groups[0].name, "Users");
-        assert_eq!(d.groups[0].members, vec!["customer".to_string()]);
-        assert_eq!(d.layout.len(), 1);
+        assert_eq!(d.groups().len(), 2);
+        assert_eq!(d.groups()[0].name, "Users");
+        assert_eq!(d.groups()[0].members, vec!["customer".to_string()]);
+        assert_eq!(d.layout().len(), 1);
         assert!(matches!(
-            d.layout[0],
+            d.layout()[0],
             crate::syntax::LayoutStatement::Placement { .. }
         ));
     }

@@ -14,7 +14,7 @@ fn orders_domain_builds_the_expected_model() {
     assert_eq!(m.diagrams.len(), 1);
     assert_eq!(
         m.diagrams[0]
-            .groups
+            .groups()
             .iter()
             .map(|g| g.members.len())
             .sum::<usize>(),

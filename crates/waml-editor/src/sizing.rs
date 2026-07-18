@@ -38,12 +38,13 @@ pub fn size_map(model: &Model, diagram: &Diagram) -> SizeMap {
     let lookup: BTreeMap<&str, &Node> = model.nodes.iter().map(|n| (n.key.as_str(), n)).collect();
 
     let mut keys = Vec::new();
-    collect_member_keys(&diagram.groups, &mut keys);
+    collect_member_keys(diagram.groups(), &mut keys);
 
     let mut map = SizeMap::new();
+    let display = diagram.display().cloned().unwrap_or_default();
     for key in keys {
         if let Some(node) = lookup.get(key.as_str()) {
-            map.insert(key.clone(), size_of(node, &diagram.display));
+            map.insert(key.clone(), size_of(node, &display));
         }
     }
     map
