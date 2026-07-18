@@ -16,15 +16,18 @@
   cursor: crosshair;
 }
 
-/* Node selected ring */
+/* Node selected: brighten + thicken the existing masked accent frame and bloom.
+   No border-color literal — the frame is the .hud-surface ::before, driven by --bw. */
 .svelte-flow__node.selected > div {
-  border-color: #1e88e5 !important;
-  box-shadow: 0 0 0 3px #e6f1fb, 0 6px 18px rgba(30, 136, 229, 0.15) !important;
+  --bw: 2.5px;
+  box-shadow:
+    0 8px 22px rgba(40, 70, 110, 0.14),
+    0 0 26px rgba(var(--accent), 0.28) !important;
 }
 
 /* Edge selected */
 .svelte-flow__edge.selected .svelte-flow__edge-path {
-  stroke: #1e88e5;
+  stroke: rgb(var(--accent));
   stroke-width: 2.5;
 }
 
