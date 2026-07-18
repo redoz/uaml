@@ -12,8 +12,9 @@ export type {
   NoteAnchor,
   FlowFlavor,
   FlowNodeKind,
-  FlowNode,
+  ActivityNode,
   FlowEdge,
+  FlowEdgeKind,
   FlowDoc,
   MessageVerb,
   FragmentKind,
@@ -34,6 +35,8 @@ import type {
   RelEnd,
   RelationshipKind,
   NoteAnchor,
+  ActivityNode,
+  FlowEdge,
   FlowDoc,
   SequenceDoc,
   Concept,
@@ -172,6 +175,10 @@ export interface ModelGraph {
   packages: ModelNode[];
   /** Flow-substrate behavior documents (self-rendering; absent on legacy graphs). */
   flows?: FlowDoc[];
+  /** Model-level pool of behavior flow elements, referenced by `FlowDoc.nodes` (design spec §3/§4). */
+  activityNodes?: ActivityNode[];
+  /** Model-level pool of typed control/object flow edges, referenced by `FlowDoc.edges`. */
+  flowEdges?: FlowEdge[];
   /** Interaction-substrate behavior documents (self-rendering; absent on legacy graphs). */
   interactions?: SequenceDoc[];
 }
