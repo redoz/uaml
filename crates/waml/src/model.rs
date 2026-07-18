@@ -217,6 +217,10 @@ impl<'de> serde::Deserialize<'de> for AssocName {
     }
 }
 
+/// The ontology-agnostic substrate edge (design spec §2): endpoints
+/// (`source`/`target`) plus its ontology payload (`kind`). UML-specific
+/// association data lives behind `kind` in `crate::uml`; callers reach it via
+/// the accessors below (never a raw field/variant match).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
@@ -226,20 +230,33 @@ pub struct Edge {
     pub source: String,
     #[cfg_attr(feature = "serde", serde(rename = "to"))]
     pub target: String,
-    pub kind: RelationshipKind,
-    #[cfg_attr(
-        feature = "serde",
-        serde(default, skip_serializing_if = "Option::is_none")
-    )]
-    #[cfg_attr(feature = "wasm", tsify(type = "string | { ref: string }"))]
-    pub name: Option<AssocName>,
-    #[cfg_attr(feature = "serde", serde(rename = "fromEnd"))]
-    pub from_end: RelEnd,
-    #[cfg_attr(feature = "serde", serde(rename = "toEnd"))]
-    pub to_end: RelEnd,
-    /// True when a reciprocal `associates` was declared from both ends; both
-    /// ends are then navigable. Set during Model resolution (Plan 3).
-    pub bidirectional: bool,
+    pub kind: EdgeKind,
+}
+
+impl Edge {
+    pub fn relationship(&self) -> Option<&crate::uml::Relationship> {
+        match &self.kind {
+            EdgeKind::Uml(crate::uml::UmlEdge::Relationship(r)) => Some(r),
+            _ => None,
+        }
+    }
+    pub fn rel_kind(&self) -> Option<RelationshipKind> {
+        self.relationship().map(|r| r.kind)
+    }
+    pub fn name(&self) -> Option<&AssocName> {
+        self.relationship().and_then(|r| r.name.as_ref())
+    }
+    pub fn from_end(&self) -> Option<&RelEnd> {
+        self.relationship().map(|r| &r.from_end)
+    }
+    pub fn to_end(&self) -> Option<&RelEnd> {
+        self.relationship().map(|r| &r.to_end)
+    }
+    pub fn bidirectional(&self) -> bool {
+        self.relationship()
+            .map(|r| r.bidirectional)
+            .unwrap_or(false)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

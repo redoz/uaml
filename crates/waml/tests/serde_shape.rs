@@ -46,6 +46,31 @@ fn node_reshape_keeps_wire_flat_and_accessors_work() {
 }
 
 #[test]
+fn edge_reshape_keeps_wire_flat_and_accessors_work() {
+    use waml::model::RelationshipKind;
+    let m = build_model(&bundle()); // order composes line (see bundle())
+    let e = m
+        .edges
+        .iter()
+        .find(|e| e.rel_kind() == Some(RelationshipKind::Composes))
+        .unwrap();
+    assert_eq!(e.source, "m/order");
+    assert_eq!(e.target, "m/line");
+    assert!(e.relationship().is_some());
+    // Wire stays flat: from/to/kind unchanged.
+    let v = serde_json::to_value(waml::wire::build_wire(&m)).unwrap();
+    let we = v["edges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|e| e["kind"] == "composes")
+        .unwrap();
+    assert_eq!(we["from"], "m/order");
+    assert_eq!(we["to"], "m/line");
+    assert_eq!(we["bidirectional"], false);
+}
+
+#[test]
 fn wire_json_matches_ts_field_names() {
     let model = build_model(&bundle());
     let wire = waml::wire::build_wire(&model);

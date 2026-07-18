@@ -1026,8 +1026,9 @@ fn build_interactions(parsed: &[ParsedDoc], keyset: &HashSet<&str>) -> Vec<Seque
     out
 }
 
-use crate::model::{AssocName, RelationshipKind};
+use crate::model::{AssocName, EdgeKind, RelationshipKind};
 use crate::syntax::ParsedName;
+use crate::uml::{Relationship, UmlEdge};
 
 fn build_edges(classifiers: &[&ParsedDoc], keyset: &HashSet<&str>) -> Vec<Edge> {
     let mut edges: Vec<Edge> = Vec::new();
@@ -1061,12 +1062,13 @@ fn build_edges(classifiers: &[&ParsedDoc], keyset: &HashSet<&str>) -> Vec<Edge> 
                     pair.sort();
                     let key = (pair[0].clone(), pair[1].clone());
                     if let Some(&idx) = assoc_pair.get(&key) {
-                        let e = &mut edges[idx];
-                        e.bidirectional = true;
-                        e.from_end.navigable = Some(true);
-                        e.to_end.navigable = Some(true);
-                        if e.name.is_none() && name.is_some() {
-                            e.name = name;
+                        if let EdgeKind::Uml(UmlEdge::Relationship(rel)) = &mut edges[idx].kind {
+                            rel.bidirectional = true;
+                            rel.from_end.navigable = Some(true);
+                            rel.to_end.navigable = Some(true);
+                            if rel.name.is_none() && name.is_some() {
+                                rel.name = name;
+                            }
                         }
                         continue;
                     }
@@ -1075,11 +1077,13 @@ fn build_edges(classifiers: &[&ParsedDoc], keyset: &HashSet<&str>) -> Vec<Edge> 
                     edges.push(Edge {
                         source: from.clone(),
                         target: to.clone(),
-                        kind: RelationshipKind::Associates,
-                        name,
-                        from_end: r.from_end.clone(),
-                        to_end,
-                        bidirectional: false,
+                        kind: EdgeKind::Uml(UmlEdge::Relationship(Relationship {
+                            kind: RelationshipKind::Associates,
+                            name,
+                            from_end: r.from_end.clone(),
+                            to_end,
+                            bidirectional: false,
+                        })),
                     });
                     assoc_pair.insert(key, edges.len() - 1);
                 } else {
@@ -1090,11 +1094,13 @@ fn build_edges(classifiers: &[&ParsedDoc], keyset: &HashSet<&str>) -> Vec<Edge> 
                     edges.push(Edge {
                         source: from.clone(),
                         target: to.clone(),
-                        kind: r.kind,
-                        name,
-                        from_end: r.from_end.clone(),
-                        to_end: r.to_end.clone(),
-                        bidirectional: false,
+                        kind: EdgeKind::Uml(UmlEdge::Relationship(Relationship {
+                            kind: r.kind,
+                            name,
+                            from_end: r.from_end.clone(),
+                            to_end: r.to_end.clone(),
+                            bidirectional: false,
+                        })),
                     });
                 }
             }
@@ -1702,12 +1708,12 @@ mod model_tests {
         let comp = m
             .edges
             .iter()
-            .find(|e| e.kind == crate::model::RelationshipKind::Composes)
+            .find(|e| e.rel_kind() == Some(crate::model::RelationshipKind::Composes))
             .unwrap();
         assert_eq!(comp.source, "a/order");
         assert_eq!(comp.target, "a/order-line");
-        assert_eq!(comp.to_end.role.as_deref(), Some("lines"));
-        assert!(!comp.bidirectional);
+        assert_eq!(comp.to_end().unwrap().role.as_deref(), Some("lines"));
+        assert!(!comp.bidirectional());
     }
 
     #[test]
@@ -1716,16 +1722,16 @@ mod model_tests {
         let assocs: Vec<_> = m
             .edges
             .iter()
-            .filter(|e| e.kind == crate::model::RelationshipKind::Associates)
+            .filter(|e| e.rel_kind() == Some(crate::model::RelationshipKind::Associates))
             .collect();
         assert_eq!(
             assocs.len(),
             1,
             "reciprocal associates must collapse to one edge"
         );
-        assert!(assocs[0].bidirectional);
-        assert_eq!(assocs[0].from_end.navigable, Some(true));
-        assert_eq!(assocs[0].to_end.navigable, Some(true));
+        assert!(assocs[0].bidirectional());
+        assert_eq!(assocs[0].from_end().unwrap().navigable, Some(true));
+        assert_eq!(assocs[0].to_end().unwrap().navigable, Some(true));
     }
 
     #[test]

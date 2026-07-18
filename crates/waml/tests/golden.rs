@@ -1,3 +1,4 @@
+use waml::model::RelationshipKind;
 use waml::parse::{build_model, parse_document, split_bundle};
 use waml::serialize::serialize_document;
 
@@ -22,7 +23,11 @@ fn orders_domain_builds_the_expected_model() {
 
     // Two edges: composes + associates.
     assert_eq!(m.edges.len(), 2);
-    let kinds: Vec<_> = m.edges.iter().map(|e| e.kind.as_str()).collect();
+    let kinds: Vec<_> = m
+        .edges
+        .iter()
+        .map(|e| e.rel_kind().unwrap().as_str())
+        .collect();
     assert!(kinds.contains(&"composes"));
     assert!(kinds.contains(&"associates"));
 
@@ -30,23 +35,23 @@ fn orders_domain_builds_the_expected_model() {
     let comp = m
         .edges
         .iter()
-        .find(|e| e.kind.as_str() == "composes")
+        .find(|e| e.rel_kind() == Some(RelationshipKind::Composes))
         .unwrap();
     assert_eq!(comp.source, "shop/order");
     assert_eq!(comp.target, "shop/order-line");
-    assert_eq!(comp.to_end.role.as_deref(), Some("lines"));
+    assert_eq!(comp.to_end().unwrap().role.as_deref(), Some("lines"));
 
     // The associates edge (declared on order.md as "1 order to 1 customer")
     // resolves order -> customer, near role "order" and far role "customer".
     let assoc = m
         .edges
         .iter()
-        .find(|e| e.kind.as_str() == "associates")
+        .find(|e| e.rel_kind() == Some(RelationshipKind::Associates))
         .unwrap();
     assert_eq!(assoc.source, "shop/order");
     assert_eq!(assoc.target, "shop/customer");
-    assert_eq!(assoc.from_end.role.as_deref(), Some("order"));
-    assert_eq!(assoc.to_end.role.as_deref(), Some("customer"));
+    assert_eq!(assoc.from_end().unwrap().role.as_deref(), Some("order"));
+    assert_eq!(assoc.to_end().unwrap().role.as_deref(), Some("customer"));
 
     // The Money value-object's own attribute types are bare tokens (no matching docs).
     let money = m.node("shop/money").unwrap();

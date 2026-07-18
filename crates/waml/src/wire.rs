@@ -181,14 +181,15 @@ fn wire_node(n: &Node, concepts: &HashMap<String, Concept>) -> WireNode {
 }
 
 fn wire_edge(e: &Edge) -> WireEdge {
+    let r = e.relationship();
     WireEdge {
         source: e.source.clone(),
         target: e.target.clone(),
-        kind: e.kind,
-        name: e.name.clone(),
-        from_end: e.from_end.clone(),
-        to_end: e.to_end.clone(),
-        bidirectional: e.bidirectional,
+        kind: e.rel_kind().unwrap_or(RelationshipKind::Associates),
+        name: r.and_then(|r| r.name.clone()),
+        from_end: r.map(|r| r.from_end.clone()).unwrap_or_default(),
+        to_end: r.map(|r| r.to_end.clone()).unwrap_or_default(),
+        bidirectional: e.bidirectional(),
     }
 }
 

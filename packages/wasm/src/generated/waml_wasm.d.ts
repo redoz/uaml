@@ -383,6 +383,18 @@ export type MessageVerb = "calls" | "sends" | "replies" | "creates" | "destroys"
 export type NodeKind = { Uml: UmlNode } | { Unknown: string };
 
 /**
+ * The ontology-agnostic substrate edge (design spec §2): endpoints
+ * (`source`/`target`) plus its ontology payload (`kind`). UML-specific
+ * association data lives behind `kind` in `crate::uml`; callers reach it via
+ * the accessors below (never a raw field/variant match).
+ */
+export interface Edge {
+    from: string;
+    to: string;
+    kind: EdgeKind;
+}
+
+/**
  * The ontology-agnostic substrate node (design spec §2): identity (`key`),
  * render label (`label`), and its ontology payload (`kind`). The OKF `Concept`
  * is NOT here — it is a parse-time projection of storage, kept on
@@ -445,20 +457,6 @@ export interface Diagram {
     groups: DiagramGroup[];
     layout: unknown[];
     display?: DiagramDisplay;
-}
-
-export interface Edge {
-    from: string;
-    to: string;
-    kind: RelationshipKind;
-    name?: string | { ref: string };
-    fromEnd: RelEnd;
-    toEnd: RelEnd;
-    /**
-     * True when a reciprocal `associates` was declared from both ends; both
-     * ends are then navigable. Set during Model resolution (Plan 3).
-     */
-    bidirectional: boolean;
 }
 
 export interface FlagSet {

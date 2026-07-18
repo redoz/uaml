@@ -641,7 +641,12 @@ fn run_show(slug: &str, q: &QueryArgs) -> i32 {
                 .iter()
                 .filter(|e| e.source == slug || e.target == slug)
             {
-                println!("  {} {} {}", e.source, e.kind.as_str(), e.target);
+                println!(
+                    "  {} {} {}",
+                    e.source,
+                    e.rel_kind().map(|k| k.as_str()).unwrap_or(""),
+                    e.target
+                );
             }
             0
         }

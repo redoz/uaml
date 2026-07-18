@@ -65,7 +65,7 @@ pub fn build_scene(model: &Model, diagram: &Diagram) -> (Scene, Vec<Diagnostic>)
             edges.push(SceneEdge {
                 source,
                 target,
-                kind: e.kind,
+                kind: e.rel_kind().unwrap_or(RelationshipKind::Associates),
             });
         }
     }
